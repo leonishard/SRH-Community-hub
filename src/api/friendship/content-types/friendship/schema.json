@@ -1,0 +1,34 @@
+{
+  "kind": "collectionType",
+  "collectionName": "friendships",
+  "info": {
+    "singularName": "friendship",
+    "pluralName": "friendships",
+    "displayName": "Friendship",
+    "description": "Student-to-student friend connection/request (self-referential many-to-many with a status)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "requester": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::student.student",
+      "inversedBy": "sentFriendRequests"
+    },
+    "addressee": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::student.student",
+      "inversedBy": "receivedFriendRequests"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "accepted"],
+      "default": "pending",
+      "required": true
+    }
+  }
+}

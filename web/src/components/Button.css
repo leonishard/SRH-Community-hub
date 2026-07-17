@@ -1,0 +1,33 @@
+.btn {
+  border-radius: var(--radius);
+  padding: 0.6rem 1.1rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border: 1px solid var(--signal);
+  transition: background-color 100ms ease-out, color 100ms ease-out;
+}
+
+.btn--primary {
+  background: var(--signal);
+  color: var(--paper);
+}
+
+.btn--primary:hover {
+  background: var(--signal-hover);
+}
+
+.btn--outline {
+  background: transparent;
+  color: var(--signal);
+}
+
+.btn--outline:hover {
+  background: var(--signal);
+  color: var(--paper);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

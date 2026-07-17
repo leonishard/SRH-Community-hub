@@ -1,0 +1,9 @@
+.status-tag {
+  display: inline-block;
+  border: 1px solid var(--tag-color);
+  color: var(--tag-color);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius);
+}

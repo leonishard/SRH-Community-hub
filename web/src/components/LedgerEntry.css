@@ -1,0 +1,35 @@
+.ledger-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.75rem 0 0.75rem 0.85rem;
+  border-left: 2px solid var(--accent);
+  border-bottom: 1px solid var(--line);
+  animation: ledger-in 150ms ease-out;
+}
+
+.ledger-entry:last-child {
+  border-bottom: none;
+}
+
+.ledger-entry__time {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  color: var(--ash-fg);
+  width: 4.5rem;
+}
+
+.ledger-entry__text {
+  font-size: 0.9375rem;
+}
+
+@keyframes ledger-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

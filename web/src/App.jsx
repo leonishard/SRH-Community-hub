@@ -15,8 +15,10 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/login" element={<Login />} />
+            {/* Login lives inside AppLayout too, so the sidebar (and guest nav) is
+                always present — never a bare dead-end form. */}
             <Route element={<AppLayout />}>
+              <Route path="/login" element={<Login />} />
               <Route
                 path="/my-circle"
                 element={

@@ -6,6 +6,17 @@
  * Anything not listed here is left untouched (so manual tweaks made later
  * in the admin UI are never clobbered by a restart).
  */
+/**
+ * Plugin actions each custom role needs beyond our own api::* content types.
+ * `users-permissions.user.me` is auto-granted to the built-in Public/Authenticated
+ * roles by the plugin itself, but NOT to roles we create ourselves — without this,
+ * Group Managers/Coordinators get a 403 from `/api/users/me` despite a valid JWT.
+ */
+const PLUGIN_PERMISSIONS = {
+  group_manager: { 'users-permissions': { user: ['me'] } },
+  coordinator: { 'users-permissions': { user: ['me'] } },
+};
+
 const ROLE_PERMISSIONS = {
   public: {
     group: ['find', 'findOne'],
@@ -51,6 +62,24 @@ function applyPermissions(permissionTree, spec) {
   }
 }
 
+function applyPluginPermissions(permissionTree, pluginSpec) {
+  for (const [pluginName, controllers] of Object.entries(pluginSpec)) {
+    const pluginKey = `plugin::${pluginName}`;
+    for (const [controllerName, actions] of Object.entries(controllers)) {
+      for (const action of actions) {
+        const actionEntry = permissionTree[pluginKey]?.controllers?.[controllerName]?.[action];
+        if (actionEntry) {
+          actionEntry.enabled = true;
+        } else {
+          strapi.log.warn(
+            `[bootstrap] Could not find plugin permission ${pluginKey}.controllers.${controllerName}.${action} - skipping.`
+          );
+        }
+      }
+    }
+  }
+}
+
 /** Finds an existing custom role by its `type` slug, creating it (with empty permissions) if missing. */
 async function ensureRole(strapi, { name, description, type }) {
   const roleService = strapi.plugin('users-permissions').service('role');
@@ -86,15 +115,18 @@ async function configureRolesAndPermissions(strapi) {
   });
 
   const roleTargets = [
-    { id: publicRole.id, spec: ROLE_PERMISSIONS.public },
-    { id: authenticatedRole.id, spec: ROLE_PERMISSIONS.authenticated },
-    { id: groupManagerRoleId, spec: ROLE_PERMISSIONS.group_manager },
-    { id: coordinatorRoleId, spec: ROLE_PERMISSIONS.coordinator },
+    { id: publicRole.id, spec: ROLE_PERMISSIONS.public, pluginSpec: PLUGIN_PERMISSIONS.public },
+    { id: authenticatedRole.id, spec: ROLE_PERMISSIONS.authenticated, pluginSpec: PLUGIN_PERMISSIONS.authenticated },
+    { id: groupManagerRoleId, spec: ROLE_PERMISSIONS.group_manager, pluginSpec: PLUGIN_PERMISSIONS.group_manager },
+    { id: coordinatorRoleId, spec: ROLE_PERMISSIONS.coordinator, pluginSpec: PLUGIN_PERMISSIONS.coordinator },
   ];
 
-  for (const { id, spec } of roleTargets) {
+  for (const { id, spec, pluginSpec } of roleTargets) {
     const role = await roleService.findOne(id);
     applyPermissions(role.permissions, spec);
+    if (pluginSpec) {
+      applyPluginPermissions(role.permissions, pluginSpec);
+    }
     await roleService.updateRole(id, {
       name: role.name,
       description: role.description,

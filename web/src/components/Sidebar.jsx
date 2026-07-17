@@ -17,6 +17,10 @@ export function Sidebar() {
 
   function handleLogout() {
     logout();
+    // If logging out from a guarded route (e.g. /my-circle), ProtectedRoute
+    // will redirect to /login itself — landing on /discover otherwise gives
+    // a friendlier "logged out" destination. Either way the sidebar (and
+    // guest nav) stays visible since /login lives inside AppLayout too.
     navigate('/discover');
   }
 

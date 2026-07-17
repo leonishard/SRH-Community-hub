@@ -32,7 +32,6 @@ export function Login() {
   return (
     <div className="login">
       <div className="login__panel">
-        <div className="login__brand mono">SRH AMBASSADOR HUB</div>
         <h1 className="login__title">Sign in</h1>
         <form className="login__form" onSubmit={handleSubmit}>
           <label className="login__label caption" htmlFor="identifier">

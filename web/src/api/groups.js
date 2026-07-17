@@ -1,7 +1,11 @@
 import { api } from './client';
 
 export async function listGroups(params = {}) {
-  const res = await api.get('/groups', { 'pagination[pageSize]': 100, ...params });
+  const res = await api.get('/groups', {
+    'pagination[pageSize]': 100,
+    populate: 'manager,members',
+    ...params,
+  });
   return res.data;
 }
 

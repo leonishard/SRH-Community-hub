@@ -63,6 +63,20 @@ export function AuthProvider({ children }) {
     setRoleType('public');
   }, []);
 
+  /** Re-fetches the Student profile (groups/managedGroups) after e.g. a join/leave action. */
+  const refreshStudent = useCallback(async () => {
+    if (!getToken()) return;
+    try {
+      const profile = await fetchMyStudentProfile();
+      const { roleType: fetchedRoleType, ...studentFields } = profile;
+      setStudent(studentFields);
+      setRoleType(fetchedRoleType || 'authenticated');
+    } catch (err) {
+      if (!(err instanceof ApiError) || err.status !== 404) throw err;
+      setStudent(null);
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -73,6 +87,7 @@ export function AuthProvider({ children }) {
         loading,
         login,
         logout,
+        refreshStudent,
       }}
     >
       {children}

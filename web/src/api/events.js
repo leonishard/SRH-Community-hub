@@ -9,3 +9,7 @@ export async function listEvents(params = {}) {
   });
   return res.data;
 }
+
+export async function reviewEvent(documentId, status) {
+  return api.put(`/events/${documentId}`, { status });
+}

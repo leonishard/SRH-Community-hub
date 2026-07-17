@@ -8,12 +8,14 @@ const NAV_ITEMS = [
   { to: '/discover', label: 'Discover' },
   { to: '/groups', label: 'Groups' },
   { to: '/events', label: 'Events' },
+  { to: '/friends', label: 'Friends' },
 ];
 
 export function Sidebar() {
   const { student, isAuthenticated, roleType, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const navItems = roleType === 'coordinator' ? [...NAV_ITEMS, { to: '/review', label: 'Review' }] : NAV_ITEMS;
 
   function handleLogout() {
     logout();
@@ -29,7 +31,7 @@ export function Sidebar() {
       <div className="sidebar__brand mono">SRH AMBASSADOR HUB</div>
 
       <nav className="sidebar__nav">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

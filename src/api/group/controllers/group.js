@@ -1,9 +1,28 @@
 'use strict';
 
 const { createCoreController } = require('@strapi/strapi').factories;
-const { getAuthenticatedStudent } = require('../../../utils/students');
+const { getAuthenticatedStudent, isCoordinator } = require('../../../utils/students');
 
 module.exports = createCoreController('api::group.group', ({ strapi }) => ({
+  /**
+   * Group details editing is gated by the `is-own-group-manager` policy
+   * (config'd on the route). Here we additionally strip `manager`/`members`
+   * for non-Coordinators — reassigning the manager or membership is handled
+   * by dedicated flows (join/leave, and manager changes stay Coordinator-only).
+   */
+  async update(ctx) {
+    const body = ctx.request.body || {};
+    const data = { ...(body.data || {}) };
+
+    if (!isCoordinator(ctx.state.user)) {
+      delete data.manager;
+      delete data.members;
+    }
+
+    ctx.request.body = { ...body, data };
+    return super.update(ctx);
+  },
+
   /** Lets the authenticated student subscribe to (join) a group. Publicly visible membership. */
   async join(ctx) {
     const student = await getAuthenticatedStudent(strapi, ctx.state.user);

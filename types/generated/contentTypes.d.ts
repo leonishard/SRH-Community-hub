@@ -509,6 +509,42 @@ export interface ApiFriendshipFriendship extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiGroupProposalGroupProposal
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'group_proposals';
+  info: {
+    description: 'Student-submitted request to create a new Group, reviewed by a Coordinator';
+    displayName: 'Group Proposal';
+    pluralName: 'group-proposals';
+    singularName: 'group-proposal';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    approvedBy: Schema.Attribute.Relation<'manyToOne', 'api::student.student'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::group-proposal.group-proposal'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['pending', 'approved', 'rejected']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
+    submittedBy: Schema.Attribute.Relation<'manyToOne', 'api::student.student'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiGroupGroup extends Struct.CollectionTypeSchema {
   collectionName: 'groups';
   info: {
@@ -583,6 +619,10 @@ export interface ApiStudentStudent extends Struct.CollectionTypeSchema {
   };
   attributes: {
     approvedEvents: Schema.Attribute.Relation<'oneToMany', 'api::event.event'>;
+    approvedGroupProposals: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::group-proposal.group-proposal'
+    >;
     bio: Schema.Attribute.Text;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -612,6 +652,10 @@ export interface ApiStudentStudent extends Struct.CollectionTypeSchema {
       'api::friendship.friendship'
     >;
     submittedEvents: Schema.Attribute.Relation<'oneToMany', 'api::event.event'>;
+    submittedGroupProposals: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::group-proposal.group-proposal'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1136,6 +1180,7 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::event.event': ApiEventEvent;
       'api::friendship.friendship': ApiFriendshipFriendship;
+      'api::group-proposal.group-proposal': ApiGroupProposalGroupProposal;
       'api::group.group': ApiGroupGroup;
       'api::post.post': ApiPostPost;
       'api::student.student': ApiStudentStudent;

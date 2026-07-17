@@ -17,3 +17,8 @@ export async function sendFriendRequest(addresseeDocumentId) {
 export async function acceptFriendRequest(documentId) {
   return api.put(`/friendships/${documentId}`, { status: 'accepted' });
 }
+
+/** Declines a pending request or removes an existing friendship — either party may call this. */
+export async function removeFriendship(documentId) {
+  return api.del(`/friendships/${documentId}`);
+}

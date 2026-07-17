@@ -1,0 +1,41 @@
+{
+  "kind": "collectionType",
+  "collectionName": "group_proposals",
+  "info": {
+    "singularName": "group-proposal",
+    "pluralName": "group-proposals",
+    "displayName": "Group Proposal",
+    "description": "Student-submitted request to create a new Group, reviewed by a Coordinator"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "approved", "rejected"],
+      "default": "pending",
+      "required": true
+    },
+    "submittedBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::student.student",
+      "inversedBy": "submittedGroupProposals"
+    },
+    "approvedBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::student.student",
+      "inversedBy": "approvedGroupProposals"
+    }
+  }
+}

@@ -1,12 +1,6 @@
 'use strict';
 
 /**
- * Desired action-level permissions per role, expressed as
- * { <api folder name>: [<controller action names>] }.
- * Anything not listed here is left untouched (so manual tweaks made later
- * in the admin UI are never clobbered by a restart).
- */
-/**
  * Plugin actions each custom role needs beyond our own api::* content types.
  * `users-permissions.user.me` is auto-granted to the built-in Public/Authenticated
  * roles by the plugin itself, but NOT to roles we create ourselves — without this,
@@ -17,6 +11,12 @@ const PLUGIN_PERMISSIONS = {
   coordinator: { 'users-permissions': { user: ['me'] } },
 };
 
+/**
+ * Desired action-level permissions per role, expressed as
+ * { <api folder name>: [<controller action names>] }.
+ * Anything not listed here is left untouched (so manual tweaks made later
+ * in the admin UI are never clobbered by a restart).
+ */
 const ROLE_PERMISSIONS = {
   public: {
     group: ['find', 'findOne'],
@@ -24,18 +24,20 @@ const ROLE_PERMISSIONS = {
     post: ['find', 'findOne'],
   },
   authenticated: {
-    student: ['find', 'findOne', 'me'],
+    student: ['find', 'findOne', 'me', 'update'],
     group: ['find', 'findOne', 'join', 'leave'],
     event: ['find', 'findOne'],
     post: ['find', 'findOne'],
     friendship: ['find', 'findOne', 'create', 'update', 'delete'],
+    'group-proposal': ['find', 'findOne', 'create'],
   },
   group_manager: {
-    student: ['find', 'findOne', 'me'],
-    group: ['find', 'findOne', 'join', 'leave'],
+    student: ['find', 'findOne', 'me', 'update'],
+    group: ['find', 'findOne', 'join', 'leave', 'update'],
     event: ['find', 'findOne', 'create', 'update'],
     post: ['find', 'findOne', 'create', 'update'],
     friendship: ['find', 'findOne', 'create', 'update', 'delete'],
+    'group-proposal': ['find', 'findOne', 'create'],
   },
   coordinator: {
     student: ['find', 'findOne', 'create', 'update', 'delete', 'me'],
@@ -43,6 +45,7 @@ const ROLE_PERMISSIONS = {
     event: ['find', 'findOne', 'create', 'update', 'delete'],
     post: ['find', 'findOne', 'create', 'update', 'delete'],
     friendship: ['find', 'findOne', 'create', 'update', 'delete'],
+    'group-proposal': ['find', 'findOne', 'create', 'update', 'delete'],
   },
 };
 

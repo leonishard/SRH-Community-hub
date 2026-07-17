@@ -80,6 +80,18 @@
       "relation": "oneToMany",
       "target": "api::friendship.friendship",
       "mappedBy": "addressee"
+    },
+    "submittedGroupProposals": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::group-proposal.group-proposal",
+      "mappedBy": "submittedBy"
+    },
+    "approvedGroupProposals": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::group-proposal.group-proposal",
+      "mappedBy": "approvedBy"
     }
   }
 }

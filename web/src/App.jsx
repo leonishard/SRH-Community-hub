@@ -8,6 +8,8 @@ import { MyCircle } from './pages/MyCircle';
 import { Discover } from './pages/Discover';
 import { Groups } from './pages/Groups';
 import { Events } from './pages/Events';
+import { Friends } from './pages/Friends';
+import { Review } from './pages/Review';
 
 export default function App() {
   return (
@@ -31,6 +33,22 @@ export default function App() {
               <Route path="/discover" element={<Discover />} />
               <Route path="/groups" element={<Groups />} />
               <Route path="/events" element={<Events />} />
+              <Route
+                path="/friends"
+                element={
+                  <ProtectedRoute>
+                    <Friends />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/review"
+                element={
+                  <ProtectedRoute>
+                    <Review />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
             <Route path="*" element={<Navigate to="/discover" replace />} />
           </Routes>

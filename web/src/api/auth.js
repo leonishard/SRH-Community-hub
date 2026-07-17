@@ -1,6 +1,9 @@
 import { api, setToken } from './client';
 
 export async function login(identifier, password) {
+  // Clear any stale token first — sending an old session's Bearer token
+  // alongside a fresh /auth/local call gets the request rejected by Strapi.
+  setToken(null);
   const res = await api.postRaw('/auth/local', { identifier, password });
   setToken(res.jwt);
   return res.user;

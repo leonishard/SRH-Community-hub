@@ -44,7 +44,10 @@ export function Friends() {
   }
 
   const mine = friendships.filter(
-    (f) => f.requester?.documentId === student.documentId || f.addressee?.documentId === student.documentId
+    (f) =>
+      f.requester &&
+      f.addressee &&
+      (f.requester.documentId === student.documentId || f.addressee.documentId === student.documentId)
   );
   const accepted = mine.filter((f) => f.status === 'accepted');
   const incoming = mine.filter((f) => f.status === 'pending' && f.addressee?.documentId === student.documentId);

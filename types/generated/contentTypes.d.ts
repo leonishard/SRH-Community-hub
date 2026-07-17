@@ -488,7 +488,8 @@ export interface ApiFriendshipFriendship extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    addressee: Schema.Attribute.Relation<'manyToOne', 'api::student.student'>;
+    addressee: Schema.Attribute.Relation<'manyToOne', 'api::student.student'> &
+      Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -499,7 +500,8 @@ export interface ApiFriendshipFriendship extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    requester: Schema.Attribute.Relation<'manyToOne', 'api::student.student'>;
+    requester: Schema.Attribute.Relation<'manyToOne', 'api::student.student'> &
+      Schema.Attribute.Required;
     status: Schema.Attribute.Enumeration<['pending', 'accepted']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'pending'>;

@@ -9,6 +9,11 @@ export async function listGroups(params = {}) {
   return res.data;
 }
 
+export async function getGroup(documentId) {
+  const res = await api.get(`/groups/${documentId}`, { populate: 'manager,members,coverImage' });
+  return res.data;
+}
+
 export async function joinGroup(documentId) {
   return api.post(`/groups/${documentId}/join`);
 }

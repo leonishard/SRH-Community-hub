@@ -16,13 +16,15 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::student.student",
-      "inversedBy": "sentFriendRequests"
+      "inversedBy": "sentFriendRequests",
+      "required": true
     },
     "addressee": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::student.student",
-      "inversedBy": "receivedFriendRequests"
+      "inversedBy": "receivedFriendRequests",
+      "required": true
     },
     "status": {
       "type": "enumeration",

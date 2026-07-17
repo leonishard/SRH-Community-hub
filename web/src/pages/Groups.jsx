@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { listGroups, joinGroup, leaveGroup } from '../api/groups';
 import { listGroupProposals, submitGroupProposal } from '../api/groupProposals';
 import { Button } from '../components/Button';
 import { StatusTag } from '../components/StatusTag';
 import '../components/Card.css';
+import './Groups.css';
 
 export function Groups() {
   const { isAuthenticated, student, refreshStudent } = useAuth();
@@ -14,6 +16,7 @@ export function Groups() {
   const [error, setError] = useState(null);
   const [pendingId, setPendingId] = useState(null);
 
+  const [showProposalForm, setShowProposalForm] = useState(false);
   const [proposalName, setProposalName] = useState('');
   const [proposalDescription, setProposalDescription] = useState('');
   const [submittingProposal, setSubmittingProposal] = useState(false);
@@ -36,6 +39,10 @@ export function Groups() {
   }, [isAuthenticated]);
 
   const myGroupIds = new Set((student?.groups || []).map((g) => g.documentId));
+  const myManagedGroups = student?.managedGroups || [];
+  // Once approved, a proposal has become a real Group (see myManagedGroups above) —
+  // it no longer belongs in the pending/rejected proposals list.
+  const openProposals = proposals.filter((p) => p.status !== 'approved');
 
   async function handleToggleMembership(group) {
     setPendingId(group.documentId);
@@ -63,6 +70,7 @@ export function Groups() {
       setProposalName('');
       setProposalDescription('');
       setProposalNotice('Proposal submitted — a Coordinator will review it.');
+      setShowProposalForm(false);
       await loadProposals();
     } catch (err) {
       setError(err.message);
@@ -73,13 +81,52 @@ export function Groups() {
 
   return (
     <div>
-      <h1>Groups</h1>
-      <p className="caption" style={{ marginTop: '0.5rem' }}>
-        Every group in the Ambassador Hub.
-      </p>
+      <div className="groups-header">
+        <div>
+          <h1>Groups</h1>
+          <p className="caption" style={{ marginTop: '0.5rem' }}>
+            Every group in the Ambassador Hub.
+          </p>
+        </div>
+        {isAuthenticated && (
+          <Button onClick={() => setShowProposalForm((v) => !v)}>
+            {showProposalForm ? 'CANCEL' : '+ NEW GROUP'}
+          </Button>
+        )}
+      </div>
 
-      {loading && <p className="caption">Loading groups…</p>}
+      {showProposalForm && (
+        <section className="groups-proposal-form">
+          <h2>Propose a new group</h2>
+          <form onSubmit={handleSubmitProposal} style={{ marginTop: '1rem', maxWidth: '480px' }}>
+            <label className="caption" htmlFor="proposal-name">
+              NAME
+            </label>
+            <input
+              id="proposal-name"
+              value={proposalName}
+              onChange={(e) => setProposalName(e.target.value)}
+              required
+            />
+            <label className="caption" htmlFor="proposal-description">
+              DESCRIPTION
+            </label>
+            <textarea
+              id="proposal-description"
+              value={proposalDescription}
+              onChange={(e) => setProposalDescription(e.target.value)}
+              rows={3}
+            />
+            <Button type="submit" disabled={submittingProposal}>
+              {submittingProposal ? 'SUBMITTING…' : 'SUBMIT PROPOSAL'}
+            </Button>
+          </form>
+        </section>
+      )}
+      {proposalNotice && <p className="caption" style={{ marginTop: '1rem' }}>{proposalNotice}</p>}
+
       {error && <p className="caption" style={{ color: 'var(--status-rejected)' }}>{error}</p>}
+      {loading && <p className="caption">Loading groups…</p>}
 
       {!loading && !error && (
         <div className="card-grid">
@@ -87,13 +134,15 @@ export function Groups() {
             const isMember = myGroupIds.has(group.documentId);
             return (
               <div className="card" key={group.documentId}>
-                <div className="card__title">{group.name}</div>
-                <div className="card__meta caption">
-                  {group.category}
-                  {group.members ? ` · ${group.members.length} member${group.members.length === 1 ? '' : 's'}` : ''}
-                </div>
-                <div className="card__description">{group.description}</div>
-                {group.manager && <div className="caption">Managed by {group.manager.name}</div>}
+                <Link to={`/groups/${group.documentId}`} className="card__link">
+                  <div className="card__title">{group.name}</div>
+                  <div className="card__meta caption">
+                    {group.category}
+                    {group.members ? ` · ${group.members.length} member${group.members.length === 1 ? '' : 's'}` : ''}
+                  </div>
+                  <div className="card__description">{group.description}</div>
+                  {group.manager && <div className="caption">Managed by {group.manager.name}</div>}
+                </Link>
                 {isAuthenticated && (
                   <div className="card__footer">
                     <Button
@@ -111,79 +160,35 @@ export function Groups() {
         </div>
       )}
 
-      {isAuthenticated && (
+      {isAuthenticated && myManagedGroups.length > 0 && (
         <section style={{ marginTop: '3rem' }}>
-          <h2>Propose a new group</h2>
-          <form onSubmit={handleSubmitProposal} style={{ marginTop: '1rem', maxWidth: '480px' }}>
-            <label className="caption" htmlFor="proposal-name">
-              NAME
-            </label>
-            <input
-              id="proposal-name"
-              value={proposalName}
-              onChange={(e) => setProposalName(e.target.value)}
-              required
-              style={{
-                display: 'block',
-                width: '100%',
-                marginTop: '0.35rem',
-                marginBottom: '1rem',
-                border: '1px solid var(--line)',
-                borderRadius: 'var(--radius)',
-                background: 'transparent',
-                color: 'var(--fg)',
-                padding: '0.6rem 0.75rem',
-              }}
-            />
-            <label className="caption" htmlFor="proposal-description">
-              DESCRIPTION
-            </label>
-            <textarea
-              id="proposal-description"
-              value={proposalDescription}
-              onChange={(e) => setProposalDescription(e.target.value)}
-              rows={3}
-              style={{
-                display: 'block',
-                width: '100%',
-                marginTop: '0.35rem',
-                marginBottom: '1rem',
-                border: '1px solid var(--line)',
-                borderRadius: 'var(--radius)',
-                background: 'transparent',
-                color: 'var(--fg)',
-                padding: '0.6rem 0.75rem',
-                fontFamily: 'inherit',
-              }}
-            />
-            <Button type="submit" disabled={submittingProposal}>
-              {submittingProposal ? 'SUBMITTING…' : 'SUBMIT PROPOSAL'}
-            </Button>
-            {proposalNotice && <p className="caption" style={{ marginTop: '0.75rem' }}>{proposalNotice}</p>}
-          </form>
+          <h2 className="mono" style={{ fontSize: '0.8125rem', color: 'var(--ash-fg)', letterSpacing: '0.06em' }}>
+            MY GROUPS
+          </h2>
+          {myManagedGroups.map((group) => (
+            <Link
+              to={`/groups/${group.documentId}`}
+              key={group.documentId}
+              className="groups-list-row"
+            >
+              <span>{group.name}</span>
+              <span className="caption">MANAGER</span>
+            </Link>
+          ))}
+        </section>
+      )}
 
-          {proposals.length > 0 && (
-            <div style={{ marginTop: '2rem' }}>
-              <h2 className="mono" style={{ fontSize: '0.8125rem', color: 'var(--ash-fg)', letterSpacing: '0.06em' }}>
-                YOUR PROPOSALS
-              </h2>
-              {proposals.map((proposal) => (
-                <div
-                  key={proposal.documentId}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '0.75rem 0',
-                    borderBottom: '1px solid var(--line)',
-                  }}
-                >
-                  <span>{proposal.name}</span>
-                  <StatusTag status={proposal.status} />
-                </div>
-              ))}
+      {isAuthenticated && openProposals.length > 0 && (
+        <section style={{ marginTop: '3rem' }}>
+          <h2 className="mono" style={{ fontSize: '0.8125rem', color: 'var(--ash-fg)', letterSpacing: '0.06em' }}>
+            YOUR PROPOSALS
+          </h2>
+          {openProposals.map((proposal) => (
+            <div className="groups-list-row" key={proposal.documentId}>
+              <span>{proposal.name}</span>
+              <StatusTag status={proposal.status} />
             </div>
-          )}
+          ))}
         </section>
       )}
     </div>

@@ -13,3 +13,7 @@ export async function listEvents(params = {}) {
 export async function reviewEvent(documentId, status) {
   return api.put(`/events/${documentId}`, { status });
 }
+
+export async function submitEvent({ title, description, date, location, group }) {
+  return api.post('/events', { title, description, date, location, group });
+}

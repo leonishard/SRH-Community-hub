@@ -7,6 +7,7 @@ import { Login } from './pages/Login';
 import { MyCircle } from './pages/MyCircle';
 import { Discover } from './pages/Discover';
 import { Groups } from './pages/Groups';
+import { GroupDetail } from './pages/GroupDetail';
 import { Events } from './pages/Events';
 import { Friends } from './pages/Friends';
 import { Review } from './pages/Review';
@@ -32,6 +33,7 @@ export default function App() {
               {/* Public per the backend's Public role: read-only Groups/Events/Posts, no login required. */}
               <Route path="/discover" element={<Discover />} />
               <Route path="/groups" element={<Groups />} />
+              <Route path="/groups/:documentId" element={<GroupDetail />} />
               <Route path="/events" element={<Events />} />
               <Route
                 path="/friends"

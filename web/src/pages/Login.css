@@ -1,6 +1,9 @@
 .login {
   display: flex;
   justify-content: center;
+  align-items: start;
+  flex-wrap: wrap;
+  gap: 1.5rem;
   padding-top: 10vh;
 }
 
@@ -11,6 +14,48 @@
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
+}
+
+.login__quick-panel {
+  max-width: 320px;
+}
+
+.login__quick-title {
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  color: var(--ash-fg);
+}
+
+.login__quick-group {
+  margin-top: 1.25rem;
+}
+
+.login__quick-group-label {
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.login__quick-account {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--fg);
+  padding: 0.55rem 0.75rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  transition: border-color 100ms ease-out;
+}
+
+.login__quick-account:hover {
+  border-color: var(--signal);
+}
+
+.login__quick-account:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .login__title {

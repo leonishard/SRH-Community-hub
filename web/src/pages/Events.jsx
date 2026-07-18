@@ -14,13 +14,14 @@ function formatDate(iso) {
   });
 }
 
-const EMPTY_FILTERS = { group: '', host: '', category: '', dateFrom: '', dateTo: '' };
+const EMPTY_FILTERS = { group: '', host: '', category: '' };
 
 export function Events() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [sortOrder, setSortOrder] = useState('asc');
 
   useEffect(() => {
     listEvents()
@@ -47,14 +48,14 @@ export function Events() {
     return [...set].sort();
   }, [events]);
 
-  const filteredEvents = events.filter((event) => {
-    if (filters.group && event.group?.documentId !== filters.group) return false;
-    if (filters.host && event.submittedBy?.documentId !== filters.host) return false;
-    if (filters.category && event.category !== filters.category) return false;
-    if (filters.dateFrom && new Date(event.date) < new Date(filters.dateFrom)) return false;
-    if (filters.dateTo && new Date(event.date) > new Date(`${filters.dateTo}T23:59:59`)) return false;
-    return true;
-  });
+  const filteredEvents = events
+    .filter((event) => {
+      if (filters.group && event.group?.documentId !== filters.group) return false;
+      if (filters.host && event.submittedBy?.documentId !== filters.host) return false;
+      if (filters.category && event.category !== filters.category) return false;
+      return true;
+    })
+    .sort((a, b) => (sortOrder === 'asc' ? 1 : -1) * (new Date(a.date) - new Date(b.date)));
 
   const hasActiveFilters = Object.values(filters).some(Boolean);
 
@@ -95,15 +96,10 @@ export function Events() {
             </select>
           )}
 
-          <label className="events-filter-bar__date-label caption">
-            FROM
-            <input type="date" value={filters.dateFrom} onChange={(e) => updateFilter('dateFrom', e.target.value)} />
-          </label>
-
-          <label className="events-filter-bar__date-label caption">
-            TO
-            <input type="date" value={filters.dateTo} onChange={(e) => updateFilter('dateTo', e.target.value)} />
-          </label>
+          <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+            <option value="asc">Soonest first</option>
+            <option value="desc">Latest first</option>
+          </select>
 
           {hasActiveFilters && (
             <button type="button" className="link-button caption" onClick={() => setFilters(EMPTY_FILTERS)}>

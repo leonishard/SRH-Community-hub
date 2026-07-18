@@ -3,11 +3,7 @@
 }
 
 .my-circle__header {
-  margin-bottom: 2rem;
-}
-
-.my-circle__header p {
-  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .my-circle__section-title {
@@ -25,31 +21,25 @@
   color: var(--status-rejected);
 }
 
-.my-circle__body {
-  display: grid;
-  grid-template-columns: 1fr 260px;
-  gap: 2.5rem;
-  align-items: start;
-}
-
-.my-circle__main {
-  min-width: 0;
-}
-
-@media (max-width: 860px) {
-  .my-circle__body {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* Quick Stats */
 
 .my-circle__stats {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
-  position: sticky;
-  top: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (max-width: 860px) {
+  .my-circle__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .my-circle__stats {
+    grid-template-columns: 1fr;
+  }
 }
 
 .stat-card {

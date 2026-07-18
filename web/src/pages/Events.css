@@ -17,18 +17,3 @@
   color: var(--fg);
   padding: 0.55rem 0.65rem;
 }
-
-.events-filter-bar__date-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.events-filter-bar__date-label input[type='date'] {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--bg);
-  color: var(--fg);
-  padding: 0.5rem 0.6rem;
-  font-family: inherit;
-}

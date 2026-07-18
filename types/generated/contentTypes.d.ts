@@ -525,6 +525,8 @@ export interface ApiGroupProposalGroupProposal
   };
   attributes: {
     approvedBy: Schema.Attribute.Relation<'manyToOne', 'api::student.student'>;
+    category: Schema.Attribute.String;
+    coverImage: Schema.Attribute.Media<'images'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -536,6 +538,7 @@ export interface ApiGroupProposalGroupProposal
     > &
       Schema.Attribute.Private;
     name: Schema.Attribute.String & Schema.Attribute.Required;
+    profilePicture: Schema.Attribute.Media<'images'>;
     publishedAt: Schema.Attribute.DateTime;
     status: Schema.Attribute.Enumeration<['pending', 'approved', 'rejected']> &
       Schema.Attribute.Required &
@@ -573,6 +576,7 @@ export interface ApiGroupGroup extends Struct.CollectionTypeSchema {
     members: Schema.Attribute.Relation<'manyToMany', 'api::student.student'>;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     posts: Schema.Attribute.Relation<'oneToMany', 'api::post.post'>;
+    profilePicture: Schema.Attribute.Media<'images'>;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

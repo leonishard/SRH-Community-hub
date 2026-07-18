@@ -2,7 +2,14 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { API_URL } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { getGroup, joinGroup, leaveGroup, updateGroup, uploadGroupCoverImage } from '../api/groups';
+import {
+  getGroup,
+  joinGroup,
+  leaveGroup,
+  updateGroup,
+  uploadGroupCoverImage,
+  uploadGroupProfilePicture,
+} from '../api/groups';
 import { listEvents, submitEvent } from '../api/events';
 import { Button } from '../components/Button';
 import { StatusTag } from '../components/StatusTag';
@@ -42,6 +49,7 @@ export function GroupDetail() {
   const [categoryDraft, setCategoryDraft] = useState('');
   const [savingGroup, setSavingGroup] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingProfilePicture, setUploadingProfilePicture] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -96,6 +104,7 @@ export function GroupDetail() {
   const pending = events.filter((e) => e.status === 'pending');
 
   const coverUrl = group.coverImage?.url ? `${API_URL}${group.coverImage.url}` : null;
+  const profilePictureUrl = group.profilePicture?.url ? `${API_URL}${group.profilePicture.url}` : null;
 
   async function handleToggleMembership() {
     setMembershipPending(true);
@@ -159,6 +168,21 @@ export function GroupDetail() {
     }
   }
 
+  async function handleProfilePictureChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingProfilePicture(true);
+    try {
+      const uploaded = await uploadGroupProfilePicture(file);
+      await updateGroup(documentId, { profilePicture: uploaded.id });
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploadingProfilePicture(false);
+    }
+  }
+
   async function handleSaveGroup() {
     setSavingGroup(true);
     try {
@@ -182,24 +206,31 @@ export function GroupDetail() {
         <Link to="/groups">← Back to Groups</Link>
       </p>
 
-      {coverUrl && (
-        <div className="group-detail__cover">
-          <img src={coverUrl} alt="" />
-        </div>
-      )}
+      <div className="group-detail__cover">
+        {coverUrl ? <img src={coverUrl} alt="" /> : <div className="group-detail__cover-placeholder" />}
+      </div>
 
       <div className="group-detail__header">
-        <div>
-          <h1>{group.name}</h1>
-          <div className="card__meta caption" style={{ marginTop: '0.5rem' }}>
-            {group.category}
-            {group.members ? ` · ${group.members.length} member${group.members.length === 1 ? '' : 's'}` : ''}
+        <div className="group-detail__identity">
+          <div className="group-detail__avatar">
+            {profilePictureUrl ? (
+              <img src={profilePictureUrl} alt="" />
+            ) : (
+              <div className="group-detail__avatar-placeholder" />
+            )}
           </div>
-          {group.manager && (
-            <div className="caption" style={{ marginTop: '0.25rem' }}>
-              Managed by <Link to={`/students/${group.manager.documentId}`}>{group.manager.name}</Link>
+          <div>
+            <h1>{group.name}</h1>
+            <div className="card__meta caption" style={{ marginTop: '0.5rem' }}>
+              {group.category}
+              {group.members ? ` · ${group.members.length} member${group.members.length === 1 ? '' : 's'}` : ''}
             </div>
-          )}
+            {group.manager && (
+              <div className="caption" style={{ marginTop: '0.25rem' }}>
+                Managed by <Link to={`/students/${group.manager.documentId}`}>{group.manager.name}</Link>
+              </div>
+            )}
+          </div>
         </div>
         <div className="group-detail__header-actions">
           {canManageGroup && (
@@ -226,7 +257,16 @@ export function GroupDetail() {
         <div className="group-detail__main">
           {editingGroup ? (
             <section className="group-detail__form">
-              <label className="caption" htmlFor="group-cover">COVER IMAGE</label>
+              <label className="caption" htmlFor="group-profile-picture">PROFILE PICTURE</label>
+              <input
+                id="group-profile-picture"
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePictureChange}
+                disabled={uploadingProfilePicture}
+              />
+
+              <label className="caption" htmlFor="group-cover">COVER IMAGE (BANNER)</label>
               <input id="group-cover" type="file" accept="image/*" onChange={handleCoverChange} disabled={uploadingCover} />
 
               <label className="caption" htmlFor="group-name">NAME</label>

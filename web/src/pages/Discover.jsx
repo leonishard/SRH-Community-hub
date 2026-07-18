@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { API_URL } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { listGroups, joinGroup } from '../api/groups';
 import { Button } from '../components/Button';
@@ -49,9 +50,18 @@ export function Discover() {
 
       {!loading && !error && discoverable.length > 0 && (
         <div className="card-grid">
-          {discoverable.map((group) => (
+          {discoverable.map((group) => {
+            const thumbUrl = group.profilePicture?.url ? `${API_URL}${group.profilePicture.url}` : null;
+            return (
             <div className="card" key={group.documentId}>
-              <div className="card__title">{group.name}</div>
+              <div className="card__thumb-row">
+                {thumbUrl ? (
+                  <img className="card__thumb" src={thumbUrl} alt="" />
+                ) : (
+                  <div className="card__thumb card__thumb--placeholder" />
+                )}
+                <div className="card__title">{group.name}</div>
+              </div>
               <div className="card__meta caption">
                 {group.category}
                 {group.members ? ` · ${group.members.length} member${group.members.length === 1 ? '' : 's'}` : ''}
@@ -65,7 +75,8 @@ export function Discover() {
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

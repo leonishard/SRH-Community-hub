@@ -33,6 +33,26 @@
   font-weight: 600;
 }
 
+.card__thumb-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.card__thumb {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  object-fit: cover;
+  background: var(--line);
+}
+
+.card__thumb--placeholder {
+  background: var(--line);
+}
+
 .card__meta {
   display: flex;
   gap: 0.5rem;

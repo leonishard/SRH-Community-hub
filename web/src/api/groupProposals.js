@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api, uploadFile } from './client';
 
 export async function listGroupProposals(params = {}) {
   const res = await api.get('/group-proposals', {
@@ -10,8 +10,12 @@ export async function listGroupProposals(params = {}) {
   return res.data;
 }
 
-export async function submitGroupProposal({ name, description }) {
-  return api.post('/group-proposals', { name, description });
+export async function submitGroupProposal({ name, description, category, coverImage, profilePicture }) {
+  return api.post('/group-proposals', { name, description, category, coverImage, profilePicture });
+}
+
+export async function uploadGroupProposalImage(file) {
+  return uploadFile(file);
 }
 
 export async function reviewGroupProposal(documentId, status) {

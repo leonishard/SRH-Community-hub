@@ -19,6 +19,21 @@
     "description": {
       "type": "text"
     },
+    "category": {
+      "type": "string"
+    },
+    "coverImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "profilePicture": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
     "status": {
       "type": "enumeration",
       "enum": ["pending", "approved", "rejected"],

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { API_URL } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { listGroups, joinGroup, leaveGroup } from '../api/groups';
-import { listGroupProposals, submitGroupProposal } from '../api/groupProposals';
+import { listGroupProposals, submitGroupProposal, uploadGroupProposalImage } from '../api/groupProposals';
 import { Button } from '../components/Button';
 import { StatusTag } from '../components/StatusTag';
 import '../components/Card.css';
@@ -18,7 +19,10 @@ export function Groups() {
 
   const [showProposalForm, setShowProposalForm] = useState(false);
   const [proposalName, setProposalName] = useState('');
+  const [proposalCategory, setProposalCategory] = useState('');
   const [proposalDescription, setProposalDescription] = useState('');
+  const [proposalProfilePicture, setProposalProfilePicture] = useState(null);
+  const [proposalCoverImage, setProposalCoverImage] = useState(null);
   const [submittingProposal, setSubmittingProposal] = useState(false);
   const [proposalNotice, setProposalNotice] = useState(null);
 
@@ -61,14 +65,31 @@ export function Groups() {
     }
   }
 
+  function resetProposalForm() {
+    setProposalName('');
+    setProposalCategory('');
+    setProposalDescription('');
+    setProposalProfilePicture(null);
+    setProposalCoverImage(null);
+  }
+
   async function handleSubmitProposal(e) {
     e.preventDefault();
     setSubmittingProposal(true);
     setProposalNotice(null);
     try {
-      await submitGroupProposal({ name: proposalName, description: proposalDescription });
-      setProposalName('');
-      setProposalDescription('');
+      const [uploadedProfilePicture, uploadedCoverImage] = await Promise.all([
+        proposalProfilePicture ? uploadGroupProposalImage(proposalProfilePicture) : null,
+        proposalCoverImage ? uploadGroupProposalImage(proposalCoverImage) : null,
+      ]);
+      await submitGroupProposal({
+        name: proposalName,
+        category: proposalCategory,
+        description: proposalDescription,
+        profilePicture: uploadedProfilePicture?.id,
+        coverImage: uploadedCoverImage?.id,
+      });
+      resetProposalForm();
       setProposalNotice('Proposal submitted — a Coordinator will review it.');
       setShowProposalForm(false);
       await loadProposals();
@@ -108,6 +129,17 @@ export function Groups() {
               onChange={(e) => setProposalName(e.target.value)}
               required
             />
+
+            <label className="caption" htmlFor="proposal-category">
+              CATEGORY
+            </label>
+            <input
+              id="proposal-category"
+              value={proposalCategory}
+              onChange={(e) => setProposalCategory(e.target.value)}
+              placeholder="e.g. Technology, Arts, Outdoors"
+            />
+
             <label className="caption" htmlFor="proposal-description">
               DESCRIPTION
             </label>
@@ -117,6 +149,27 @@ export function Groups() {
               onChange={(e) => setProposalDescription(e.target.value)}
               rows={3}
             />
+
+            <label className="caption" htmlFor="proposal-profile-picture">
+              PROFILE PICTURE
+            </label>
+            <input
+              id="proposal-profile-picture"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setProposalProfilePicture(e.target.files?.[0] || null)}
+            />
+
+            <label className="caption" htmlFor="proposal-cover-image">
+              COVER IMAGE (BANNER)
+            </label>
+            <input
+              id="proposal-cover-image"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setProposalCoverImage(e.target.files?.[0] || null)}
+            />
+
             <Button type="submit" disabled={submittingProposal}>
               {submittingProposal ? 'SUBMITTING…' : 'SUBMIT PROPOSAL'}
             </Button>
@@ -132,10 +185,18 @@ export function Groups() {
         <div className="card-grid">
           {groups.map((group) => {
             const isMember = myGroupIds.has(group.documentId);
+            const thumbUrl = group.profilePicture?.url ? `${API_URL}${group.profilePicture.url}` : null;
             return (
               <div className="card" key={group.documentId}>
                 <Link to={`/groups/${group.documentId}`} className="card__link">
-                  <div className="card__title">{group.name}</div>
+                  <div className="card__thumb-row">
+                    {thumbUrl ? (
+                      <img className="card__thumb" src={thumbUrl} alt="" />
+                    ) : (
+                      <div className="card__thumb card__thumb--placeholder" />
+                    )}
+                    <div className="card__title">{group.name}</div>
+                  </div>
                   <div className="card__meta caption">
                     {group.category}
                     {group.members ? ` · ${group.members.length} member${group.members.length === 1 ? '' : 's'}` : ''}

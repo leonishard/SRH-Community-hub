@@ -28,6 +28,12 @@
       "required": false,
       "allowedTypes": ["images"]
     },
+    "profilePicture": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
     "manager": {
       "type": "relation",
       "relation": "manyToOne",

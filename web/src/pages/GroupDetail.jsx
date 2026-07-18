@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { API_URL } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { getGroup, joinGroup, leaveGroup } from '../api/groups';
+import { getGroup, joinGroup, leaveGroup, updateGroup, uploadGroupCoverImage } from '../api/groups';
 import { listEvents, submitEvent } from '../api/events';
 import { Button } from '../components/Button';
 import { StatusTag } from '../components/StatusTag';
@@ -35,6 +36,13 @@ export function GroupDetail() {
   const [submittingEvent, setSubmittingEvent] = useState(false);
   const [eventNotice, setEventNotice] = useState(null);
 
+  const [editingGroup, setEditingGroup] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const [descriptionDraft, setDescriptionDraft] = useState('');
+  const [categoryDraft, setCategoryDraft] = useState('');
+  const [savingGroup, setSavingGroup] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+
   async function load() {
     setLoading(true);
     try {
@@ -43,6 +51,9 @@ export function GroupDetail() {
         listEvents({ 'filters[group][documentId][$eq]': documentId, 'sort[0]': 'date:asc' }),
       ]);
       setGroup(groupData);
+      setNameDraft(groupData.name || '');
+      setDescriptionDraft(groupData.description || '');
+      setCategoryDraft(groupData.category || '');
       setEvents(groupEvents);
     } catch (err) {
       setError(err.message);
@@ -53,6 +64,7 @@ export function GroupDetail() {
 
   useEffect(() => {
     load();
+    setEditingGroup(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documentId]);
 
@@ -75,13 +87,15 @@ export function GroupDetail() {
   const isMember = (student?.groups || []).some((g) => g.documentId === documentId);
   const isManager = (student?.managedGroups || []).some((g) => g.documentId === documentId);
   const isCoordinator = roleType === 'coordinator';
-  const canSubmitEvent = isManager || isCoordinator;
+  const canManageGroup = isManager || isCoordinator;
 
   const now = new Date();
   const approved = events.filter((e) => e.status === 'approved');
   const upcoming = approved.filter((e) => new Date(e.date) >= now);
   const past = approved.filter((e) => new Date(e.date) < now);
   const pending = events.filter((e) => e.status === 'pending');
+
+  const coverUrl = group.coverImage?.url ? `${API_URL}${group.coverImage.url}` : null;
 
   async function handleToggleMembership() {
     setMembershipPending(true);
@@ -130,11 +144,49 @@ export function GroupDetail() {
     }
   }
 
+  async function handleCoverChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingCover(true);
+    try {
+      const uploaded = await uploadGroupCoverImage(file);
+      await updateGroup(documentId, { coverImage: uploaded.id });
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploadingCover(false);
+    }
+  }
+
+  async function handleSaveGroup() {
+    setSavingGroup(true);
+    try {
+      await updateGroup(documentId, {
+        name: nameDraft,
+        description: descriptionDraft,
+        category: categoryDraft,
+      });
+      setEditingGroup(false);
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingGroup(false);
+    }
+  }
+
   return (
     <div>
       <p className="caption">
         <Link to="/groups">← Back to Groups</Link>
       </p>
+
+      {coverUrl && (
+        <div className="group-detail__cover">
+          <img src={coverUrl} alt="" />
+        </div>
+      )}
 
       <div className="group-detail__header">
         <div>
@@ -150,7 +202,12 @@ export function GroupDetail() {
           )}
         </div>
         <div className="group-detail__header-actions">
-          {canSubmitEvent && (
+          {canManageGroup && (
+            <Button variant={editingGroup ? 'outline' : 'primary'} onClick={() => setEditingGroup((v) => !v)}>
+              {editingGroup ? 'CANCEL' : 'EDIT GROUP'}
+            </Button>
+          )}
+          {canManageGroup && (
             <Button onClick={() => setShowEventForm((v) => !v)}>
               {showEventForm ? 'CANCEL' : '+ NEW EVENT'}
             </Button>
@@ -163,102 +220,133 @@ export function GroupDetail() {
         </div>
       </div>
 
-      <p style={{ marginTop: '1.5rem' }}>{group.description}</p>
-
       {error && <p className="caption" style={{ color: 'var(--status-rejected)' }}>{error}</p>}
 
-      {group.members && group.members.length > 0 && (
-        <section style={{ marginTop: '3rem' }}>
-          <h2>Members</h2>
-          {group.members.map((member) => (
-            <Link to={`/students/${member.documentId}`} className="friends-row" key={member.documentId}>
-              <span>{member.name}</span>
-            </Link>
-          ))}
-        </section>
-      )}
+      <div className="group-detail__body">
+        <div className="group-detail__main">
+          {editingGroup ? (
+            <section className="group-detail__form">
+              <label className="caption" htmlFor="group-cover">COVER IMAGE</label>
+              <input id="group-cover" type="file" accept="image/*" onChange={handleCoverChange} disabled={uploadingCover} />
 
-      {canSubmitEvent && showEventForm && (
-        <section style={{ marginTop: '3rem' }}>
-          <h2>Submit a new event</h2>
-          <form onSubmit={handleSubmitEvent} className="group-detail__form">
-            <label className="caption" htmlFor="event-title">TITLE</label>
-            <input id="event-title" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} required />
+              <label className="caption" htmlFor="group-name">NAME</label>
+              <input id="group-name" value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} required />
 
-            <label className="caption" htmlFor="event-description">DESCRIPTION</label>
-            <textarea
-              id="event-description"
-              value={eventDescription}
-              onChange={(e) => setEventDescription(e.target.value)}
-              rows={3}
-            />
+              <label className="caption" htmlFor="group-category">CATEGORY</label>
+              <input id="group-category" value={categoryDraft} onChange={(e) => setCategoryDraft(e.target.value)} />
 
-            <label className="caption" htmlFor="event-date">DATE &amp; TIME</label>
-            <input
-              id="event-date"
-              type="datetime-local"
-              value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
-              required
-            />
+              <label className="caption" htmlFor="group-description">DESCRIPTION</label>
+              <textarea
+                id="group-description"
+                rows={4}
+                value={descriptionDraft}
+                onChange={(e) => setDescriptionDraft(e.target.value)}
+              />
 
-            <label className="caption" htmlFor="event-location">LOCATION</label>
-            <input id="event-location" value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} />
+              <Button disabled={savingGroup} onClick={handleSaveGroup}>
+                {savingGroup ? 'SAVING…' : 'SAVE'}
+              </Button>
+            </section>
+          ) : (
+            <p style={{ marginTop: '1.5rem' }}>{group.description}</p>
+          )}
 
-            <Button type="submit" disabled={submittingEvent}>
-              {submittingEvent ? 'SUBMITTING…' : 'SUBMIT EVENT'}
-            </Button>
-          </form>
-        </section>
-      )}
-      {eventNotice && <p className="caption" style={{ marginTop: '1rem' }}>{eventNotice}</p>}
+          {canManageGroup && showEventForm && (
+            <section style={{ marginTop: '3rem' }}>
+              <h2>Submit a new event</h2>
+              <form onSubmit={handleSubmitEvent} className="group-detail__form">
+                <label className="caption" htmlFor="event-title">TITLE</label>
+                <input id="event-title" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} required />
 
-      {canSubmitEvent && pending.length > 0 && (
-        <div style={{ marginTop: '3rem' }}>
-          <h2 className="mono" style={{ fontSize: '0.8125rem', color: 'var(--ash-fg)', letterSpacing: '0.06em' }}>
-            AWAITING APPROVAL
-          </h2>
-          <div className="card-grid">
-            {pending.map((event) => (
-              <div className="card" key={event.documentId}>
-                <div className="card__meta">
-                  <StatusTag status={event.status} />
-                </div>
-                <div className="card__title">{event.title}</div>
-                <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
+                <label className="caption" htmlFor="event-description">DESCRIPTION</label>
+                <textarea
+                  id="event-description"
+                  value={eventDescription}
+                  onChange={(e) => setEventDescription(e.target.value)}
+                  rows={3}
+                />
+
+                <label className="caption" htmlFor="event-date">DATE &amp; TIME</label>
+                <input
+                  id="event-date"
+                  type="datetime-local"
+                  value={eventDate}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  required
+                />
+
+                <label className="caption" htmlFor="event-location">LOCATION</label>
+                <input id="event-location" value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} />
+
+                <Button type="submit" disabled={submittingEvent}>
+                  {submittingEvent ? 'SUBMITTING…' : 'SUBMIT EVENT'}
+                </Button>
+              </form>
+            </section>
+          )}
+          {eventNotice && <p className="caption" style={{ marginTop: '1rem' }}>{eventNotice}</p>}
+
+          {canManageGroup && pending.length > 0 && (
+            <div style={{ marginTop: '3rem' }}>
+              <h2 className="mono" style={{ fontSize: '0.8125rem', color: 'var(--ash-fg)', letterSpacing: '0.06em' }}>
+                AWAITING APPROVAL
+              </h2>
+              <div className="card-grid">
+                {pending.map((event) => (
+                  <div className="card" key={event.documentId}>
+                    <div className="card__meta">
+                      <StatusTag status={event.status} />
+                    </div>
+                    <div className="card__title">{event.title}</div>
+                    <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
+                  </div>
+                ))}
               </div>
+            </div>
+          )}
+
+          <section style={{ marginTop: '3rem' }}>
+            <h2>Upcoming events</h2>
+            {upcoming.length === 0 && <p className="caption">No upcoming events.</p>}
+            <div className="card-grid">
+              {upcoming.map((event) => (
+                <div className="card" key={event.documentId}>
+                  <div className="card__title">{event.title}</div>
+                  <div className="card__description">{event.description}</div>
+                  <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section style={{ marginTop: '3rem' }}>
+            <h2>Past events</h2>
+            {past.length === 0 && <p className="caption">No past events yet.</p>}
+            <div className="card-grid">
+              {past.map((event) => (
+                <div className="card" key={event.documentId}>
+                  <div className="card__title">{event.title}</div>
+                  <div className="card__description">{event.description}</div>
+                  <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {group.members && group.members.length > 0 && (
+          <aside className="group-detail__sidebar">
+            <h2 className="mono" style={{ fontSize: '0.8125rem', color: 'var(--ash-fg)', letterSpacing: '0.06em' }}>
+              MEMBERS ({group.members.length})
+            </h2>
+            {group.members.map((member) => (
+              <Link to={`/students/${member.documentId}`} className="friends-row" key={member.documentId}>
+                <span>{member.name}</span>
+              </Link>
             ))}
-          </div>
-        </div>
-      )}
-
-      <section style={{ marginTop: '3rem' }}>
-        <h2>Upcoming events</h2>
-        {upcoming.length === 0 && <p className="caption">No upcoming events.</p>}
-        <div className="card-grid">
-          {upcoming.map((event) => (
-            <div className="card" key={event.documentId}>
-              <div className="card__title">{event.title}</div>
-              <div className="card__description">{event.description}</div>
-              <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section style={{ marginTop: '3rem' }}>
-        <h2>Past events</h2>
-        {past.length === 0 && <p className="caption">No past events yet.</p>}
-        <div className="card-grid">
-          {past.map((event) => (
-            <div className="card" key={event.documentId}>
-              <div className="card__title">{event.title}</div>
-              <div className="card__description">{event.description}</div>
-              <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+          </aside>
+        )}
+      </div>
     </div>
   );
 }

@@ -67,72 +67,76 @@ export function MyCircle() {
         </p>
       </header>
 
-      {!loading && !error && (
-        <section className="my-circle__stats">
-          <div className="stat-card">
-            <div className="stat-card__value mono">{myGroups.length}</div>
-            <div className="stat-card__label caption">Groups followed</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-card__value mono">{acceptedFriendsCount}</div>
-            <div className="stat-card__label caption">Accepted friends</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-card__value mono">{upcomingEvents.length}</div>
-            <div className="stat-card__label caption">Upcoming events</div>
-          </div>
-        </section>
-      )}
+      <div className="my-circle__body">
+        <div className="my-circle__main">
+          <section className="my-circle__upcoming">
+            <h2 className="my-circle__section-title mono">UPCOMING EVENTS</h2>
 
-      <section className="my-circle__upcoming">
-        <h2 className="my-circle__section-title mono">UPCOMING EVENTS</h2>
+            {loading && <p className="caption">Loading…</p>}
+            {error && <p className="caption my-circle__error">{error}</p>}
 
-        {loading && <p className="caption">Loading…</p>}
-        {error && <p className="caption my-circle__error">{error}</p>}
+            {!loading && !error && upcomingEvents.length === 0 && (
+              <p className="caption">No upcoming events — explore new groups to discover more.</p>
+            )}
 
-        {!loading && !error && upcomingEvents.length === 0 && (
-          <p className="caption">No upcoming events — explore new groups to discover more.</p>
+            {!loading && !error && upcomingEvents.length > 0 && (
+              <div className="my-circle__event-list">
+                {upcomingEvents.map((event) => (
+                  <Link to={`/groups/${event.group.documentId}`} className="event-row" key={event.documentId}>
+                    <div className="event-row__date mono">
+                      <span>{formatEventDate(event.date)}</span>
+                      <span className="event-row__time">{formatEventTime(event.date)}</span>
+                    </div>
+                    <div className="event-row__body">
+                      <div className="event-row__title">{event.title}</div>
+                      <div className="caption">
+                        {event.group.name}
+                        {event.location ? ` · ${event.location}` : ''}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="my-circle__activity">
+            <h2 className="my-circle__section-title mono">ACTIVITY</h2>
+
+            {loading && <p className="caption">Loading activity…</p>}
+            {error && <p className="caption my-circle__error">{error}</p>}
+
+            {!loading && !error && entries.length === 0 && (
+              <p className="caption">No activity yet in your groups. Join one from Discover to see it here.</p>
+            )}
+
+            {!loading && !error && entries.length > 0 && (
+              <div className="my-circle__ledger">
+                {entries.map((entry) => (
+                  <LedgerEntry key={entry.id} entry={entry} />
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+
+        {!loading && !error && (
+          <aside className="my-circle__stats">
+            <div className="stat-card">
+              <div className="stat-card__value mono">{myGroups.length}</div>
+              <div className="stat-card__label caption">Groups followed</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-card__value mono">{acceptedFriendsCount}</div>
+              <div className="stat-card__label caption">Accepted friends</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-card__value mono">{upcomingEvents.length}</div>
+              <div className="stat-card__label caption">Upcoming events</div>
+            </div>
+          </aside>
         )}
-
-        {!loading && !error && upcomingEvents.length > 0 && (
-          <div className="my-circle__event-list">
-            {upcomingEvents.map((event) => (
-              <Link to={`/groups/${event.group.documentId}`} className="event-row" key={event.documentId}>
-                <div className="event-row__date mono">
-                  <span>{formatEventDate(event.date)}</span>
-                  <span className="event-row__time">{formatEventTime(event.date)}</span>
-                </div>
-                <div className="event-row__body">
-                  <div className="event-row__title">{event.title}</div>
-                  <div className="caption">
-                    {event.group.name}
-                    {event.location ? ` · ${event.location}` : ''}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="my-circle__activity">
-        <h2 className="my-circle__section-title mono">ACTIVITY</h2>
-
-        {loading && <p className="caption">Loading activity…</p>}
-        {error && <p className="caption my-circle__error">{error}</p>}
-
-        {!loading && !error && entries.length === 0 && (
-          <p className="caption">No activity yet in your groups. Join one from Discover to see it here.</p>
-        )}
-
-        {!loading && !error && entries.length > 0 && (
-          <div className="my-circle__ledger">
-            {entries.map((entry) => (
-              <LedgerEntry key={entry.id} entry={entry} />
-            ))}
-          </div>
-        )}
-      </section>
+      </div>
     </div>
   );
 }

@@ -21,8 +21,8 @@ export async function reviewEvent(documentId, status) {
   return api.put(`/events/${documentId}`, { status });
 }
 
-export async function submitEvent({ title, description, date, location, group, poster }) {
-  return api.post('/events', { title, description, date, location, group, poster });
+export async function submitEvent({ title, description, date, location, category, group, poster }) {
+  return api.post('/events', { title, description, date, location, category, group, poster });
 }
 
 export async function uploadEventPoster(file) {

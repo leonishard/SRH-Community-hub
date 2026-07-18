@@ -455,6 +455,7 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
   attributes: {
     approvedBy: Schema.Attribute.Relation<'manyToOne', 'api::student.student'>;
     attendees: Schema.Attribute.Relation<'manyToMany', 'api::student.student'>;
+    category: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

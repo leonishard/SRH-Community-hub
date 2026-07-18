@@ -26,6 +26,9 @@
     "location": {
       "type": "string"
     },
+    "category": {
+      "type": "string"
+    },
     "poster": {
       "type": "media",
       "multiple": false,

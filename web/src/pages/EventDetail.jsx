@@ -93,6 +93,7 @@ export function EventDetail() {
         <div>
           <div className="card__meta" style={{ marginBottom: '0.5rem' }}>
             {event.status !== 'approved' && <StatusTag status={event.status} />}
+            {event.category && <span className="caption">{event.category}</span>}
             {event.group && (
               <span className="caption">
                 <Link to={`/groups/${event.group.documentId}`}>{event.group.name}</Link>
@@ -104,6 +105,11 @@ export function EventDetail() {
             {formatDate(event.date)} · {formatTime(event.date)}
             {event.location ? ` · ${event.location}` : ''}
           </div>
+          {event.submittedBy && (
+            <div className="caption" style={{ marginTop: '0.25rem' }}>
+              Hosted by <Link to={`/students/${event.submittedBy.documentId}`}>{event.submittedBy.name}</Link>
+            </div>
+          )}
         </div>
         <div className="group-detail__header-actions">
           {isAuthenticated ? (

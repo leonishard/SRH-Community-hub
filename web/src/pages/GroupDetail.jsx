@@ -40,6 +40,7 @@ export function GroupDetail() {
   const [eventDescription, setEventDescription] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [eventLocation, setEventLocation] = useState('');
+  const [eventCategory, setEventCategory] = useState('');
   const [eventPoster, setEventPoster] = useState(null);
   const [submittingEvent, setSubmittingEvent] = useState(false);
   const [eventNotice, setEventNotice] = useState(null);
@@ -135,6 +136,7 @@ export function GroupDetail() {
         description: eventDescription,
         date: new Date(eventDate).toISOString(),
         location: eventLocation,
+        category: eventCategory,
         group: documentId,
         poster: uploadedPoster?.id,
       });
@@ -142,6 +144,7 @@ export function GroupDetail() {
       setEventDescription('');
       setEventDate('');
       setEventLocation('');
+      setEventCategory('');
       setEventPoster(null);
       setEventNotice('Event submitted — awaiting Coordinator approval.');
       setShowEventForm(false);
@@ -321,6 +324,14 @@ export function GroupDetail() {
 
                 <label className="caption" htmlFor="event-location">LOCATION</label>
                 <input id="event-location" value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} />
+
+                <label className="caption" htmlFor="event-category">CATEGORY</label>
+                <input
+                  id="event-category"
+                  value={eventCategory}
+                  onChange={(e) => setEventCategory(e.target.value)}
+                  placeholder="e.g. Workshop, Social, Competition"
+                />
 
                 <label className="caption" htmlFor="event-poster">POSTER</label>
                 <input

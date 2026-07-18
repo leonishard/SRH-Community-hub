@@ -1,0 +1,74 @@
+.student-profile__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.student-profile__identity {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.student-profile__photo {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.student-profile__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.student-profile__photo-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--line);
+}
+
+.student-profile__edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 480px;
+  margin-top: 1.5rem;
+}
+
+.student-profile__edit label {
+  margin-top: 0.75rem;
+}
+
+.student-profile__edit input[type='file'],
+.student-profile__edit textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.35rem;
+  margin-bottom: 0.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--fg);
+  padding: 0.6rem 0.75rem;
+  font-family: inherit;
+}
+
+.student-profile__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.student-profile__edit .btn {
+  margin-top: 1.25rem;
+  align-self: flex-start;
+}

@@ -1,7 +1,12 @@
 'use strict';
 
 const { createCoreController } = require('@strapi/strapi').factories;
-const { getAuthenticatedStudent, isCoordinator } = require('../../../utils/students');
+const {
+  getAuthenticatedStudent,
+  isCoordinator,
+  getFriendshipStatus,
+  getAcceptedFriends,
+} = require('../../../utils/students');
 
 module.exports = createCoreController('api::student.student', ({ strapi }) => ({
   /** Resolves the Student profile linked to the calling account, without exposing the `user` relation to clients. */
@@ -20,6 +25,64 @@ module.exports = createCoreController('api::student.student', ({ strapi }) => ({
     // users-permissions.user.me never exposes the caller's role, so surface
     // it here for clients that need to branch on it (e.g. the frontend UI).
     ctx.body = { data: { ...sanitized, roleType: ctx.state.user.role?.type ?? null } };
+  },
+
+  /**
+   * Profile view. name/profilePicture/bio/program are always visible; the
+   * Groups (membership + managed) and Friends sections are each gated on
+   * TWO independent conditions: the viewer must be the owner or an accepted
+   * friend, AND the owner's corresponding toggle must be on. Coordinators
+   * don't get a bypass here — this is a privacy setting, not an access
+   * control the admin role overrides. Sections the viewer can't see are
+   * omitted entirely rather than shown as a locked placeholder.
+   */
+  async findOne(ctx) {
+    const { id: documentId } = ctx.params;
+    const target = await strapi.documents('api::student.student').findOne({
+      documentId,
+      populate: ['profilePicture', 'groups', 'managedGroups'],
+    });
+    if (!target) {
+      return ctx.notFound();
+    }
+
+    const viewerStudent = await getAuthenticatedStudent(strapi, ctx.state.user);
+    const isOwner = Boolean(viewerStudent) && viewerStudent.documentId === target.documentId;
+    const friendStatus = isOwner ? 'self' : await getFriendshipStatus(strapi, viewerStudent, target);
+
+    const payload = {
+      documentId: target.documentId,
+      name: target.name,
+      bio: target.bio,
+      program: target.program,
+      profilePicture: target.profilePicture,
+      isOwner,
+      friendStatus,
+    };
+
+    const canSeeGated = isOwner || friendStatus === 'friends';
+    // Rows created before these columns existed have `null`, not `true` — schema
+    // defaults only apply to new rows. Treat anything but an explicit `false` as on.
+    const showGroups = target.showGroupsOnProfile !== false;
+    const showFriends = target.showFriendsOnProfile !== false;
+
+    if (isOwner) {
+      payload.showGroupsOnProfile = showGroups;
+      payload.showFriendsOnProfile = showFriends;
+      payload.groups = target.groups;
+      payload.managedGroups = target.managedGroups;
+      payload.friends = await getAcceptedFriends(strapi, target);
+    } else {
+      if (canSeeGated && showGroups) {
+        payload.groups = target.groups;
+        payload.managedGroups = target.managedGroups;
+      }
+      if (canSeeGated && showFriends) {
+        payload.friends = await getAcceptedFriends(strapi, target);
+      }
+    }
+
+    ctx.body = { data: payload };
   },
 
   /**

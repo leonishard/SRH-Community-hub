@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import './Sidebar.css';
@@ -45,7 +45,13 @@ export function Sidebar() {
       <div className="sidebar__footer">
         {isAuthenticated ? (
           <div className="sidebar__user">
-            <div className="sidebar__user-name">{student?.name || 'Signed in'}</div>
+            {student ? (
+              <Link to={`/students/${student.documentId}`} className="sidebar__user-name sidebar__user-name--link">
+                {student.name}
+              </Link>
+            ) : (
+              <div className="sidebar__user-name">Signed in</div>
+            )}
             <div className="sidebar__user-role caption">{roleType.replace('_', ' ')}</div>
           </div>
         ) : (

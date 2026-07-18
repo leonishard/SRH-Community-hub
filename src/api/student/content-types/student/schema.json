@@ -33,6 +33,14 @@
     "program": {
       "type": "string"
     },
+    "showGroupsOnProfile": {
+      "type": "boolean",
+      "default": true
+    },
+    "showFriendsOnProfile": {
+      "type": "boolean",
+      "default": true
+    },
     "user": {
       "type": "relation",
       "relation": "oneToOne",

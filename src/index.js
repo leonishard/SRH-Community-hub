@@ -7,8 +7,15 @@
  * Group Managers/Coordinators get a 403 from `/api/users/me` despite a valid JWT.
  */
 const PLUGIN_PERMISSIONS = {
-  group_manager: { 'users-permissions': { user: ['me'] } },
-  coordinator: { 'users-permissions': { user: ['me'] } },
+  authenticated: { upload: { 'content-api': ['upload'] } },
+  group_manager: {
+    'users-permissions': { user: ['me'] },
+    upload: { 'content-api': ['upload'] },
+  },
+  coordinator: {
+    'users-permissions': { user: ['me'] },
+    upload: { 'content-api': ['upload'] },
+  },
 };
 
 /**

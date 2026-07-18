@@ -58,4 +58,21 @@ export const api = {
   postRaw: (path, body) => request(path, { method: 'POST', body }),
 };
 
+/** Uploads a single file via the Upload plugin's content-API and returns the created file record. */
+export async function uploadFile(file) {
+  const formData = new FormData();
+  formData.append('files', file);
+
+  const token = getToken();
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+  const res = await fetch(`${API_URL}/api/upload`, { method: 'POST', headers, body: formData });
+  const body = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new ApiError(body?.error?.message || res.statusText, res.status);
+  }
+  return body[0];
+}
+
 export { API_URL };

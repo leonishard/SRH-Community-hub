@@ -1,0 +1,17 @@
+.friend-action {
+  display: inline-block;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  border-radius: var(--radius);
+}
+
+.friend-action--requested {
+  border: 1px solid var(--line);
+  color: var(--ash-fg);
+}
+
+.friend-action--friends {
+  border: 1px solid var(--signal);
+  color: var(--signal);
+}

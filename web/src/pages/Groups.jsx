@@ -141,8 +141,12 @@ export function Groups() {
                     {group.members ? ` · ${group.members.length} member${group.members.length === 1 ? '' : 's'}` : ''}
                   </div>
                   <div className="card__description">{group.description}</div>
-                  {group.manager && <div className="caption">Managed by {group.manager.name}</div>}
                 </Link>
+                {group.manager && (
+                  <div className="caption">
+                    Managed by <Link to={`/students/${group.manager.documentId}`}>{group.manager.name}</Link>
+                  </div>
+                )}
                 {isAuthenticated && (
                   <div className="card__footer">
                     <Button

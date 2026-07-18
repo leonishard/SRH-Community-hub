@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { listEvents, reviewEvent } from '../api/events';
 import { listGroupProposals, reviewGroupProposal } from '../api/groupProposals';
@@ -90,7 +91,11 @@ export function Review() {
               <div className="card" key={proposal.documentId}>
                 <div className="card__title">{proposal.name}</div>
                 <div className="card__description">{proposal.description}</div>
-                {proposal.submittedBy && <div className="caption">Submitted by {proposal.submittedBy.name}</div>}
+                {proposal.submittedBy && (
+                  <div className="caption">
+                    Submitted by <Link to={`/students/${proposal.submittedBy.documentId}`}>{proposal.submittedBy.name}</Link>
+                  </div>
+                )}
                 <div className="card__footer">
                   <Button
                     disabled={pendingId === proposal.documentId}
@@ -118,7 +123,11 @@ export function Review() {
                 <div className="card__title">{event.title}</div>
                 <div className="card__meta caption">{event.group?.name}</div>
                 <div className="card__description">{event.description}</div>
-                {event.submittedBy && <div className="caption">Submitted by {event.submittedBy.name}</div>}
+                {event.submittedBy && (
+                  <div className="caption">
+                    Submitted by <Link to={`/students/${event.submittedBy.documentId}`}>{event.submittedBy.name}</Link>
+                  </div>
+                )}
                 <div className="card__footer">
                   <Button
                     disabled={pendingId === event.documentId}

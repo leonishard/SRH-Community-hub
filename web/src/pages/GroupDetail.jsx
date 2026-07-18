@@ -6,6 +6,7 @@ import { listEvents, submitEvent } from '../api/events';
 import { Button } from '../components/Button';
 import { StatusTag } from '../components/StatusTag';
 import '../components/Card.css';
+import './Friends.css';
 import './GroupDetail.css';
 
 function formatDate(iso) {
@@ -26,6 +27,7 @@ export function GroupDetail() {
   const [error, setError] = useState(null);
   const [membershipPending, setMembershipPending] = useState(false);
 
+  const [showEventForm, setShowEventForm] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
   const [eventDescription, setEventDescription] = useState('');
   const [eventDate, setEventDate] = useState('');
@@ -115,6 +117,7 @@ export function GroupDetail() {
       setEventDate('');
       setEventLocation('');
       setEventNotice('Event submitted — awaiting Coordinator approval.');
+      setShowEventForm(false);
       const groupEvents = await listEvents({
         'filters[group][documentId][$eq]': documentId,
         'sort[0]': 'date:asc',
@@ -140,20 +143,42 @@ export function GroupDetail() {
             {group.category}
             {group.members ? ` · ${group.members.length} member${group.members.length === 1 ? '' : 's'}` : ''}
           </div>
-          {group.manager && <div className="caption" style={{ marginTop: '0.25rem' }}>Managed by {group.manager.name}</div>}
+          {group.manager && (
+            <div className="caption" style={{ marginTop: '0.25rem' }}>
+              Managed by <Link to={`/students/${group.manager.documentId}`}>{group.manager.name}</Link>
+            </div>
+          )}
         </div>
-        {isAuthenticated && (
-          <Button variant={isMember ? 'outline' : 'primary'} disabled={membershipPending} onClick={handleToggleMembership}>
-            {isMember ? 'LEAVE' : 'JOIN'}
-          </Button>
-        )}
+        <div className="group-detail__header-actions">
+          {canSubmitEvent && (
+            <Button onClick={() => setShowEventForm((v) => !v)}>
+              {showEventForm ? 'CANCEL' : '+ NEW EVENT'}
+            </Button>
+          )}
+          {isAuthenticated && (
+            <Button variant={isMember ? 'outline' : 'primary'} disabled={membershipPending} onClick={handleToggleMembership}>
+              {isMember ? 'LEAVE' : 'JOIN'}
+            </Button>
+          )}
+        </div>
       </div>
 
       <p style={{ marginTop: '1.5rem' }}>{group.description}</p>
 
       {error && <p className="caption" style={{ color: 'var(--status-rejected)' }}>{error}</p>}
 
-      {canSubmitEvent && (
+      {group.members && group.members.length > 0 && (
+        <section style={{ marginTop: '3rem' }}>
+          <h2>Members</h2>
+          {group.members.map((member) => (
+            <Link to={`/students/${member.documentId}`} className="friends-row" key={member.documentId}>
+              <span>{member.name}</span>
+            </Link>
+          ))}
+        </section>
+      )}
+
+      {canSubmitEvent && showEventForm && (
         <section style={{ marginTop: '3rem' }}>
           <h2>Submit a new event</h2>
           <form onSubmit={handleSubmitEvent} className="group-detail__form">
@@ -183,28 +208,28 @@ export function GroupDetail() {
             <Button type="submit" disabled={submittingEvent}>
               {submittingEvent ? 'SUBMITTING…' : 'SUBMIT EVENT'}
             </Button>
-            {eventNotice && <p className="caption" style={{ marginTop: '0.75rem' }}>{eventNotice}</p>}
           </form>
-
-          {pending.length > 0 && (
-            <div style={{ marginTop: '2rem' }}>
-              <h2 className="mono" style={{ fontSize: '0.8125rem', color: 'var(--ash-fg)', letterSpacing: '0.06em' }}>
-                AWAITING APPROVAL
-              </h2>
-              <div className="card-grid">
-                {pending.map((event) => (
-                  <div className="card" key={event.documentId}>
-                    <div className="card__meta">
-                      <StatusTag status={event.status} />
-                    </div>
-                    <div className="card__title">{event.title}</div>
-                    <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </section>
+      )}
+      {eventNotice && <p className="caption" style={{ marginTop: '1rem' }}>{eventNotice}</p>}
+
+      {canSubmitEvent && pending.length > 0 && (
+        <div style={{ marginTop: '3rem' }}>
+          <h2 className="mono" style={{ fontSize: '0.8125rem', color: 'var(--ash-fg)', letterSpacing: '0.06em' }}>
+            AWAITING APPROVAL
+          </h2>
+          <div className="card-grid">
+            {pending.map((event) => (
+              <div className="card" key={event.documentId}>
+                <div className="card__meta">
+                  <StatusTag status={event.status} />
+                </div>
+                <div className="card__title">{event.title}</div>
+                <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       <section style={{ marginTop: '3rem' }}>

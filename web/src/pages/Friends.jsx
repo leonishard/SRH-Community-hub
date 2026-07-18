@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { listFriendships, sendFriendRequest, acceptFriendRequest, removeFriendship } from '../api/friendships';
 import { listStudents } from '../api/students';
@@ -117,12 +118,31 @@ export function Friends() {
             </div>
           </section>
 
+          <section className="friends-section">
+            <h2 className="friends-section__title mono">YOUR FRIENDS</h2>
+            {accepted.length === 0 && <p className="caption">No friends yet — send a request above.</p>}
+            {accepted.map((f) => (
+              <div className="friends-row" key={f.documentId}>
+                <Link to={`/students/${otherStudent(f)?.documentId}`}>{otherStudent(f)?.name}</Link>
+                <div className="friends-row__actions">
+                  <Button
+                    variant="outline"
+                    disabled={pendingId === f.documentId}
+                    onClick={() => runAction(f.documentId, () => removeFriendship(f.documentId))}
+                  >
+                    REMOVE
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </section>
+
           {incoming.length > 0 && (
             <section className="friends-section">
               <h2 className="friends-section__title mono">REQUESTS</h2>
               {incoming.map((f) => (
                 <div className="friends-row" key={f.documentId}>
-                  <span>{otherStudent(f)?.name}</span>
+                  <Link to={`/students/${otherStudent(f)?.documentId}`}>{otherStudent(f)?.name}</Link>
                   <div className="friends-row__actions">
                     <Button
                       disabled={pendingId === f.documentId}
@@ -148,7 +168,7 @@ export function Friends() {
               <h2 className="friends-section__title mono">SENT</h2>
               {outgoing.map((f) => (
                 <div className="friends-row" key={f.documentId}>
-                  <span>{otherStudent(f)?.name}</span>
+                  <Link to={`/students/${otherStudent(f)?.documentId}`}>{otherStudent(f)?.name}</Link>
                   <div className="friends-row__actions">
                     <span className="caption">PENDING</span>
                     <Button
@@ -163,25 +183,6 @@ export function Friends() {
               ))}
             </section>
           )}
-
-          <section className="friends-section">
-            <h2 className="friends-section__title mono">YOUR FRIENDS</h2>
-            {accepted.length === 0 && <p className="caption">No friends yet — send a request above.</p>}
-            {accepted.map((f) => (
-              <div className="friends-row" key={f.documentId}>
-                <span>{otherStudent(f)?.name}</span>
-                <div className="friends-row__actions">
-                  <Button
-                    variant="outline"
-                    disabled={pendingId === f.documentId}
-                    onClick={() => runAction(f.documentId, () => removeFriendship(f.documentId))}
-                  >
-                    REMOVE
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </section>
         </>
       )}
     </div>

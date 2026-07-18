@@ -11,6 +11,7 @@ import { GroupDetail } from './pages/GroupDetail';
 import { Events } from './pages/Events';
 import { Friends } from './pages/Friends';
 import { Review } from './pages/Review';
+import { StudentProfile } from './pages/StudentProfile';
 
 export default function App() {
   return (
@@ -40,6 +41,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <Friends />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/students/:documentId"
+                element={
+                  <ProtectedRoute>
+                    <StudentProfile />
                   </ProtectedRoute>
                 }
               />

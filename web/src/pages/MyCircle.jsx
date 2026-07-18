@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { listEvents } from '../api/events';
 import { listPosts } from '../api/posts';
@@ -7,27 +8,53 @@ import { buildLedgerEntries } from '../utils/activity';
 import { LedgerEntry } from '../components/LedgerEntry';
 import './MyCircle.css';
 
+function formatEventDate(iso) {
+  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: '2-digit' });
+}
+
+function formatEventTime(iso) {
+  return new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
 export function MyCircle() {
   const { student } = useAuth();
   const [entries, setEntries] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [friendships, setFriendships] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const myGroupIds = useMemo(() => new Set((student?.groups || []).map((g) => g.documentId)), [student]);
 
   useEffect(() => {
     if (!student) return;
 
-    const myGroupIds = new Set((student.groups || []).map((g) => g.documentId));
-
     setLoading(true);
     Promise.all([listEvents(), listPosts(), listFriendships()])
-      .then(([events, posts, friendships]) => {
-        setEntries(buildLedgerEntries({ student, myGroupIds, events, posts, friendships }));
+      .then(([fetchedEvents, posts, fetchedFriendships]) => {
+        setEvents(fetchedEvents);
+        setFriendships(fetchedFriendships);
+        setEntries(
+          buildLedgerEntries({ student, myGroupIds, events: fetchedEvents, posts, friendships: fetchedFriendships })
+        );
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [student]);
 
   const myGroups = student?.groups || [];
+
+  const acceptedFriendsCount = friendships.filter(
+    (f) =>
+      f.status === 'accepted' &&
+      (f.requester?.documentId === student?.documentId || f.addressee?.documentId === student?.documentId)
+  ).length;
+
+  const upcomingEvents = events
+    .filter((e) => e.status === 'approved' && myGroupIds.has(e.group?.documentId) && new Date(e.date) > new Date())
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .slice(0, 10);
 
   return (
     <div className="my-circle">
@@ -39,6 +66,54 @@ export function MyCircle() {
             : 'Not a member of any group yet — visit Discover to join one.'}
         </p>
       </header>
+
+      {!loading && !error && (
+        <section className="my-circle__stats">
+          <div className="stat-card">
+            <div className="stat-card__value mono">{myGroups.length}</div>
+            <div className="stat-card__label caption">Groups followed</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card__value mono">{acceptedFriendsCount}</div>
+            <div className="stat-card__label caption">Accepted friends</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card__value mono">{upcomingEvents.length}</div>
+            <div className="stat-card__label caption">Upcoming events</div>
+          </div>
+        </section>
+      )}
+
+      <section className="my-circle__upcoming">
+        <h2 className="my-circle__section-title mono">UPCOMING EVENTS</h2>
+
+        {loading && <p className="caption">Loading…</p>}
+        {error && <p className="caption my-circle__error">{error}</p>}
+
+        {!loading && !error && upcomingEvents.length === 0 && (
+          <p className="caption">No upcoming events — explore new groups to discover more.</p>
+        )}
+
+        {!loading && !error && upcomingEvents.length > 0 && (
+          <div className="my-circle__event-list">
+            {upcomingEvents.map((event) => (
+              <Link to={`/groups/${event.group.documentId}`} className="event-row" key={event.documentId}>
+                <div className="event-row__date mono">
+                  <span>{formatEventDate(event.date)}</span>
+                  <span className="event-row__time">{formatEventTime(event.date)}</span>
+                </div>
+                <div className="event-row__body">
+                  <div className="event-row__title">{event.title}</div>
+                  <div className="caption">
+                    {event.group.name}
+                    {event.location ? ` · ${event.location}` : ''}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section className="my-circle__activity">
         <h2 className="my-circle__section-title mono">ACTIVITY</h2>

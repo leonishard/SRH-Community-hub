@@ -10,7 +10,7 @@ import {
   uploadGroupCoverImage,
   uploadGroupProfilePicture,
 } from '../api/groups';
-import { listEvents, submitEvent } from '../api/events';
+import { listEvents, submitEvent, uploadEventPoster } from '../api/events';
 import { Button } from '../components/Button';
 import { StatusTag } from '../components/StatusTag';
 import '../components/Card.css';
@@ -40,6 +40,7 @@ export function GroupDetail() {
   const [eventDescription, setEventDescription] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [eventLocation, setEventLocation] = useState('');
+  const [eventPoster, setEventPoster] = useState(null);
   const [submittingEvent, setSubmittingEvent] = useState(false);
   const [eventNotice, setEventNotice] = useState(null);
 
@@ -128,17 +129,20 @@ export function GroupDetail() {
     setSubmittingEvent(true);
     setEventNotice(null);
     try {
+      const uploadedPoster = eventPoster ? await uploadEventPoster(eventPoster) : null;
       await submitEvent({
         title: eventTitle,
         description: eventDescription,
         date: new Date(eventDate).toISOString(),
         location: eventLocation,
         group: documentId,
+        poster: uploadedPoster?.id,
       });
       setEventTitle('');
       setEventDescription('');
       setEventDate('');
       setEventLocation('');
+      setEventPoster(null);
       setEventNotice('Event submitted — awaiting Coordinator approval.');
       setShowEventForm(false);
       const groupEvents = await listEvents({
@@ -318,6 +322,14 @@ export function GroupDetail() {
                 <label className="caption" htmlFor="event-location">LOCATION</label>
                 <input id="event-location" value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} />
 
+                <label className="caption" htmlFor="event-poster">POSTER</label>
+                <input
+                  id="event-poster"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setEventPoster(e.target.files?.[0] || null)}
+                />
+
                 <Button type="submit" disabled={submittingEvent}>
                   {submittingEvent ? 'SUBMITTING…' : 'SUBMIT EVENT'}
                 </Button>
@@ -332,15 +344,23 @@ export function GroupDetail() {
                 AWAITING APPROVAL
               </h2>
               <div className="card-grid">
-                {pending.map((event) => (
-                  <div className="card" key={event.documentId}>
-                    <div className="card__meta">
-                      <StatusTag status={event.status} />
-                    </div>
-                    <div className="card__title">{event.title}</div>
-                    <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
-                  </div>
-                ))}
+                {pending.map((event) => {
+                  const posterUrl = event.poster?.url ? `${API_URL}${event.poster.url}` : null;
+                  return (
+                    <Link to={`/events/${event.documentId}`} className="card card__link" key={event.documentId}>
+                      {posterUrl ? (
+                        <img className="card__poster" src={posterUrl} alt="" />
+                      ) : (
+                        <div className="card__poster card__poster--placeholder" />
+                      )}
+                      <div className="card__meta">
+                        <StatusTag status={event.status} />
+                      </div>
+                      <div className="card__title">{event.title}</div>
+                      <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -349,13 +369,21 @@ export function GroupDetail() {
             <h2>Upcoming events</h2>
             {upcoming.length === 0 && <p className="caption">No upcoming events.</p>}
             <div className="card-grid">
-              {upcoming.map((event) => (
-                <div className="card" key={event.documentId}>
-                  <div className="card__title">{event.title}</div>
-                  <div className="card__description">{event.description}</div>
-                  <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
-                </div>
-              ))}
+              {upcoming.map((event) => {
+                const posterUrl = event.poster?.url ? `${API_URL}${event.poster.url}` : null;
+                return (
+                  <Link to={`/events/${event.documentId}`} className="card card__link" key={event.documentId}>
+                    {posterUrl ? (
+                      <img className="card__poster" src={posterUrl} alt="" />
+                    ) : (
+                      <div className="card__poster card__poster--placeholder" />
+                    )}
+                    <div className="card__title">{event.title}</div>
+                    <div className="card__description">{event.description}</div>
+                    <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
+                  </Link>
+                );
+              })}
             </div>
           </section>
 
@@ -363,13 +391,21 @@ export function GroupDetail() {
             <h2>Past events</h2>
             {past.length === 0 && <p className="caption">No past events yet.</p>}
             <div className="card-grid">
-              {past.map((event) => (
-                <div className="card" key={event.documentId}>
-                  <div className="card__title">{event.title}</div>
-                  <div className="card__description">{event.description}</div>
-                  <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
-                </div>
-              ))}
+              {past.map((event) => {
+                const posterUrl = event.poster?.url ? `${API_URL}${event.poster.url}` : null;
+                return (
+                  <Link to={`/events/${event.documentId}`} className="card card__link" key={event.documentId}>
+                    {posterUrl ? (
+                      <img className="card__poster" src={posterUrl} alt="" />
+                    ) : (
+                      <div className="card__poster card__poster--placeholder" />
+                    )}
+                    <div className="card__title">{event.title}</div>
+                    <div className="card__description">{event.description}</div>
+                    <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
+                  </Link>
+                );
+              })}
             </div>
           </section>
         </div>

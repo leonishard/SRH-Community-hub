@@ -71,6 +71,12 @@
       "target": "api::event.event",
       "mappedBy": "approvedBy"
     },
+    "attendingEvents": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::event.event",
+      "mappedBy": "attendees"
+    },
     "posts": {
       "type": "relation",
       "relation": "oneToMany",

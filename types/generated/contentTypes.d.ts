@@ -454,6 +454,7 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
   };
   attributes: {
     approvedBy: Schema.Attribute.Relation<'manyToOne', 'api::student.student'>;
+    attendees: Schema.Attribute.Relation<'manyToMany', 'api::student.student'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -464,6 +465,7 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::event.event'> &
       Schema.Attribute.Private;
     location: Schema.Attribute.String;
+    poster: Schema.Attribute.Media<'images'>;
     publishedAt: Schema.Attribute.DateTime;
     status: Schema.Attribute.Enumeration<['pending', 'approved', 'rejected']> &
       Schema.Attribute.Required &
@@ -628,6 +630,10 @@ export interface ApiStudentStudent extends Struct.CollectionTypeSchema {
     approvedGroupProposals: Schema.Attribute.Relation<
       'oneToMany',
       'api::group-proposal.group-proposal'
+    >;
+    attendingEvents: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::event.event'
     >;
     bio: Schema.Attribute.Text;
     createdAt: Schema.Attribute.DateTime;

@@ -56,6 +56,14 @@ export function MyCircle() {
     .sort((a, b) => new Date(a.date) - new Date(b.date))
     .slice(0, 10);
 
+  const attendingEvents = events
+    .filter(
+      (e) =>
+        new Date(e.date) > new Date() &&
+        (e.attendees || []).some((attendee) => attendee.documentId === student?.documentId)
+    )
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
   return (
     <div className="my-circle">
       <header className="my-circle__header">
@@ -100,6 +108,34 @@ export function MyCircle() {
             )}
           </section>
 
+          <section className="my-circle__upcoming">
+            <h2 className="my-circle__section-title mono">EVENTS YOU'RE ATTENDING</h2>
+
+            {!loading && !error && attendingEvents.length === 0 && (
+              <p className="caption">You haven't RSVP'd to any upcoming events yet.</p>
+            )}
+
+            {!loading && !error && attendingEvents.length > 0 && (
+              <div className="my-circle__event-list">
+                {attendingEvents.map((event) => (
+                  <Link to={`/events/${event.documentId}`} className="event-row" key={event.documentId}>
+                    <div className="event-row__date mono">
+                      <span>{formatEventDate(event.date)}</span>
+                      <span className="event-row__time">{formatEventTime(event.date)}</span>
+                    </div>
+                    <div className="event-row__body">
+                      <div className="event-row__title">{event.title}</div>
+                      <div className="caption">
+                        {event.group?.name}
+                        {event.location ? ` · ${event.location}` : ''}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+
           <section className="my-circle__activity">
             <h2 className="my-circle__section-title mono">ACTIVITY</h2>
 
@@ -133,6 +169,10 @@ export function MyCircle() {
             <div className="stat-card">
               <div className="stat-card__value mono">{upcomingEvents.length}</div>
               <div className="stat-card__label caption">Upcoming events</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-card__value mono">{attendingEvents.length}</div>
+              <div className="stat-card__label caption">Events attending</div>
             </div>
           </aside>
         )}

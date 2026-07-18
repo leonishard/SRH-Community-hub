@@ -88,6 +88,7 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
       if (!data.submittedBy && student) {
         data.submittedBy = student.documentId;
       }
+      delete data.attendees;
       ctx.request.body = { ...body, data };
       return super.create(ctx);
     }
@@ -106,6 +107,7 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
     data.status = 'pending';
     data.submittedBy = student.documentId;
     delete data.approvedBy;
+    delete data.attendees;
 
     ctx.request.body = { ...body, data };
     return super.create(ctx);
@@ -132,6 +134,7 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
           data.approvedBy = coordinatorStudent.documentId;
         }
       }
+      delete data.attendees;
       ctx.request.body = { ...body, data };
       return super.update(ctx);
     }
@@ -157,8 +160,53 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
 
     delete data.status;
     delete data.approvedBy;
+    delete data.attendees;
 
     ctx.request.body = { ...body, data };
     return super.update(ctx);
+  },
+
+  /** Lets the authenticated student RSVP to (attend) an event. Publicly visible, like Group membership. */
+  async attend(ctx) {
+    const student = await getAuthenticatedStudent(strapi, ctx.state.user);
+    if (!student) {
+      return ctx.forbidden('No student profile is linked to this account.');
+    }
+
+    const { id: documentId } = ctx.params;
+    const event = await strapi.documents('api::event.event').findOne({ documentId });
+    if (!event) {
+      return ctx.notFound('Event not found.');
+    }
+
+    const updated = await strapi.documents('api::event.event').update({
+      documentId,
+      data: { attendees: { connect: [{ documentId: student.documentId }] } },
+      populate: ['attendees'],
+    });
+
+    ctx.body = { data: await this.sanitizeOutput(updated, ctx) };
+  },
+
+  /** Lets the authenticated student cancel their RSVP. */
+  async unattend(ctx) {
+    const student = await getAuthenticatedStudent(strapi, ctx.state.user);
+    if (!student) {
+      return ctx.forbidden('No student profile is linked to this account.');
+    }
+
+    const { id: documentId } = ctx.params;
+    const event = await strapi.documents('api::event.event').findOne({ documentId });
+    if (!event) {
+      return ctx.notFound('Event not found.');
+    }
+
+    const updated = await strapi.documents('api::event.event').update({
+      documentId,
+      data: { attendees: { disconnect: [{ documentId: student.documentId }] } },
+      populate: ['attendees'],
+    });
+
+    ctx.body = { data: await this.sanitizeOutput(updated, ctx) };
   },
 }));

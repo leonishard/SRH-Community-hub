@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { API_URL } from '../api/client';
 import { listEvents } from '../api/events';
-import { StatusTag } from '../components/StatusTag';
 import '../components/Card.css';
 
 function formatDate(iso) {
@@ -39,20 +40,31 @@ export function Events() {
 
       {!loading && !error && events.length > 0 && (
         <div className="card-grid">
-          {events.map((event) => (
-            <div className="card" key={event.documentId}>
-              <div className="card__meta">
-                <StatusTag status={event.status} />
-                {event.group && <span className="caption">{event.group.name}</span>}
-              </div>
-              <div className="card__title">{event.title}</div>
-              <div className="card__description">{event.description}</div>
-              <div className="caption">
-                {formatDate(event.date)}
-                {event.location ? ` · ${event.location}` : ''}
-              </div>
-            </div>
-          ))}
+          {events.map((event) => {
+            const posterUrl = event.poster?.url ? `${API_URL}${event.poster.url}` : null;
+            const attendeeCount = event.attendees?.length;
+            return (
+              <Link to={`/events/${event.documentId}`} className="card card__link" key={event.documentId}>
+                {posterUrl ? (
+                  <img className="card__poster" src={posterUrl} alt="" />
+                ) : (
+                  <div className="card__poster card__poster--placeholder" />
+                )}
+                {event.group && <div className="caption">{event.group.name}</div>}
+                <div className="card__title">{event.title}</div>
+                <div className="card__description">{event.description}</div>
+                <div className="caption">
+                  {formatDate(event.date)}
+                  {event.location ? ` · ${event.location}` : ''}
+                </div>
+                {typeof attendeeCount === 'number' && (
+                  <div className="caption">
+                    {attendeeCount} {attendeeCount === 1 ? 'person' : 'people'} interested
+                  </div>
+                )}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

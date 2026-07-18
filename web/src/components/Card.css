@@ -53,6 +53,19 @@
   background: var(--line);
 }
 
+.card__poster {
+  width: calc(100% + 2.5rem);
+  height: 140px;
+  margin: -1.25rem -1.25rem 0.25rem;
+  border-bottom: 1px solid var(--line);
+  object-fit: cover;
+  display: block;
+}
+
+.card__poster--placeholder {
+  background: var(--surface);
+}
+
 .card__meta {
   display: flex;
   gap: 0.5rem;

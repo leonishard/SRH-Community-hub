@@ -9,6 +9,7 @@ import { Discover } from './pages/Discover';
 import { Groups } from './pages/Groups';
 import { GroupDetail } from './pages/GroupDetail';
 import { Events } from './pages/Events';
+import { EventDetail } from './pages/EventDetail';
 import { Friends } from './pages/Friends';
 import { Review } from './pages/Review';
 import { StudentProfile } from './pages/StudentProfile';
@@ -36,6 +37,7 @@ export default function App() {
               <Route path="/groups" element={<Groups />} />
               <Route path="/groups/:documentId" element={<GroupDetail />} />
               <Route path="/events" element={<Events />} />
+              <Route path="/events/:documentId" element={<EventDetail />} />
               <Route
                 path="/friends"
                 element={

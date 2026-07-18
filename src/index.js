@@ -33,7 +33,7 @@ const ROLE_PERMISSIONS = {
   authenticated: {
     student: ['find', 'findOne', 'me', 'update'],
     group: ['find', 'findOne', 'join', 'leave'],
-    event: ['find', 'findOne'],
+    event: ['find', 'findOne', 'attend', 'unattend'],
     post: ['find', 'findOne'],
     friendship: ['find', 'findOne', 'create', 'update', 'delete'],
     'group-proposal': ['find', 'findOne', 'create'],
@@ -41,7 +41,7 @@ const ROLE_PERMISSIONS = {
   group_manager: {
     student: ['find', 'findOne', 'me', 'update'],
     group: ['find', 'findOne', 'join', 'leave', 'update'],
-    event: ['find', 'findOne', 'create', 'update'],
+    event: ['find', 'findOne', 'create', 'update', 'attend', 'unattend'],
     post: ['find', 'findOne', 'create', 'update'],
     friendship: ['find', 'findOne', 'create', 'update', 'delete'],
     'group-proposal': ['find', 'findOne', 'create'],
@@ -49,7 +49,7 @@ const ROLE_PERMISSIONS = {
   coordinator: {
     student: ['find', 'findOne', 'create', 'update', 'delete', 'me'],
     group: ['find', 'findOne', 'create', 'update', 'delete', 'join', 'leave'],
-    event: ['find', 'findOne', 'create', 'update', 'delete'],
+    event: ['find', 'findOne', 'create', 'update', 'delete', 'attend', 'unattend'],
     post: ['find', 'findOne', 'create', 'update', 'delete'],
     friendship: ['find', 'findOne', 'create', 'update', 'delete'],
     'group-proposal': ['find', 'findOne', 'create', 'update', 'delete'],

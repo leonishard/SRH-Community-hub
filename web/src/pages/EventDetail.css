@@ -1,0 +1,4 @@
+.event-detail__attendees {
+  border-top: 1px solid var(--line);
+  margin-top: 0.75rem;
+}

@@ -26,6 +26,12 @@
     "location": {
       "type": "string"
     },
+    "poster": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
     "status": {
       "type": "enumeration",
       "enum": ["pending", "approved", "rejected"],
@@ -49,6 +55,12 @@
       "relation": "manyToOne",
       "target": "api::student.student",
       "inversedBy": "approvedEvents"
+    },
+    "attendees": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::student.student",
+      "inversedBy": "attendingEvents"
     }
   }
 }

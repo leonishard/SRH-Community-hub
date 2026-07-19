@@ -101,6 +101,20 @@ export function PostThread({ post, isMember, canModerate, currentStudentDocument
       </div>
       <div className="post__content">{post.content}</div>
 
+      {post.media && post.media.length > 0 && (
+        <div className="post__media">
+          {post.media.map((file) => {
+            const url = `${API_URL}${file.url}`;
+            const isVideo = file.mime?.startsWith('video/');
+            return isVideo ? (
+              <video key={file.id} className="post__media-item" src={url} controls />
+            ) : (
+              <img key={file.id} className="post__media-item" src={url} alt="" />
+            );
+          })}
+        </div>
+      )}
+
       {error && <p className="caption" style={{ color: 'var(--status-rejected)' }}>{error}</p>}
 
       {!loading && comments.length > 0 && (

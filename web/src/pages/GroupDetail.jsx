@@ -12,7 +12,7 @@ import {
   uploadGroupProfilePicture,
 } from '../api/groups';
 import { listEvents, submitEvent, uploadEventPoster } from '../api/events';
-import { listPosts, createPost } from '../api/posts';
+import { listPosts, createPost, uploadPostMedia } from '../api/posts';
 import { Button } from '../components/Button';
 import { StatusTag } from '../components/StatusTag';
 import { PostThread } from '../components/PostThread';
@@ -42,6 +42,7 @@ export function GroupDetail() {
 
   const [showPostForm, setShowPostForm] = useState(false);
   const [newPostContent, setNewPostContent] = useState('');
+  const [newPostMedia, setNewPostMedia] = useState([]);
   const [submittingPost, setSubmittingPost] = useState(false);
 
   const [showEventForm, setShowEventForm] = useState(false);
@@ -179,8 +180,10 @@ export function GroupDetail() {
     if (!newPostContent.trim()) return;
     setSubmittingPost(true);
     try {
-      await createPost(documentId, newPostContent);
+      const mediaIds = newPostMedia.length > 0 ? await uploadPostMedia(newPostMedia) : [];
+      await createPost(documentId, newPostContent, mediaIds);
       setNewPostContent('');
+      setNewPostMedia([]);
       setShowPostForm(false);
       const groupPosts = await listPosts({ 'filters[group][documentId][$eq]': documentId });
       setPosts(groupPosts);
@@ -379,6 +382,19 @@ export function GroupDetail() {
                 placeholder="Share something with the group…"
                 required
               />
+              <label className="caption" htmlFor="post-media">PHOTOS &amp; VIDEOS (OPTIONAL)</label>
+              <input
+                id="post-media"
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                onChange={(e) => setNewPostMedia(Array.from(e.target.files || []))}
+              />
+              {newPostMedia.length > 0 && (
+                <p className="caption" style={{ marginTop: '0.25rem' }}>
+                  {newPostMedia.length} file{newPostMedia.length === 1 ? '' : 's'} selected
+                </p>
+              )}
               <Button type="submit" disabled={submittingPost || !newPostContent.trim()}>
                 {submittingPost ? 'POSTING…' : 'POST'}
               </Button>

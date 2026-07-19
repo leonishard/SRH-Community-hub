@@ -75,4 +75,21 @@ export async function uploadFile(file) {
   return body[0];
 }
 
+/** Uploads one or more files via the Upload plugin's content-API and returns the created file records. */
+export async function uploadFiles(files) {
+  const formData = new FormData();
+  Array.from(files).forEach((file) => formData.append('files', file));
+
+  const token = getToken();
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+  const res = await fetch(`${API_URL}/api/upload`, { method: 'POST', headers, body: formData });
+  const body = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new ApiError(body?.error?.message || res.statusText, res.status);
+  }
+  return body;
+}
+
 export { API_URL };

@@ -9,3 +9,8 @@ export async function listPosts(params = {}) {
   });
   return res.data;
 }
+
+/** Requires this group's manager or a Coordinator — enforced server-side. */
+export async function createPost(groupDocumentId, content) {
+  return api.post('/posts', { content, group: groupDocumentId });
+}

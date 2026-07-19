@@ -27,6 +27,17 @@
   color: var(--paper);
 }
 
+.btn--danger {
+  background: transparent;
+  color: var(--status-rejected);
+  border-color: var(--status-rejected);
+}
+
+.btn--danger:hover {
+  background: var(--status-rejected);
+  color: var(--paper);
+}
+
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;

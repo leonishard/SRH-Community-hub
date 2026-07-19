@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { API_URL } from '../api/client';
 import { listEvents } from '../api/events';
+import { StatusTag } from '../components/StatusTag';
 import '../components/Card.css';
 import './Events.css';
 
@@ -131,6 +132,7 @@ export function Events() {
                   <div className="card__poster card__poster--placeholder" />
                 )}
                 <div className="card__meta">
+                  {event.status !== 'approved' && <StatusTag status={event.status} />}
                   {event.category && <span className="caption">{event.category}</span>}
                   {event.group && <span className="caption">{event.group.name}</span>}
                 </div>

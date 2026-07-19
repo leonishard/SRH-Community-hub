@@ -83,6 +83,12 @@
       "target": "api::post.post",
       "mappedBy": "author"
     },
+    "comments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::comment.comment",
+      "mappedBy": "author"
+    },
     "sentFriendRequests": {
       "type": "relation",
       "relation": "oneToMany",

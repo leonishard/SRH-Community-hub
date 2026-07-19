@@ -1,7 +1,7 @@
 'use strict';
 
 const { createCoreController } = require('@strapi/strapi').factories;
-const { getAuthenticatedStudent, isCoordinator } = require('../../../utils/students');
+const { getAuthenticatedStudent, isCoordinator, promoteToGroupManager } = require('../../../utils/students');
 
 module.exports = createCoreController('api::group-proposal.group-proposal', ({ strapi }) => ({
   async find(ctx) {
@@ -81,7 +81,8 @@ module.exports = createCoreController('api::group-proposal.group-proposal', ({ s
     ctx.request.body = { ...body, data };
     const result = await super.update(ctx);
 
-    // Approving a proposal spins up the real Group, managed by whoever submitted it.
+    // Approving a proposal spins up the real Group, managed by whoever submitted it —
+    // and promotes them to the Group Manager role so the permission actually takes effect.
     if (data.status === 'approved' && existing.status !== 'approved' && existing.submittedBy) {
       await strapi.documents('api::group.group').create({
         data: {
@@ -93,6 +94,7 @@ module.exports = createCoreController('api::group-proposal.group-proposal', ({ s
           manager: existing.submittedBy.documentId,
         },
       });
+      await promoteToGroupManager(strapi, existing.submittedBy.documentId);
     }
 
     return result;

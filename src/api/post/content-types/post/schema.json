@@ -27,6 +27,12 @@
       "relation": "manyToOne",
       "target": "api::student.student",
       "inversedBy": "posts"
+    },
+    "comments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::comment.comment",
+      "mappedBy": "post"
     }
   }
 }

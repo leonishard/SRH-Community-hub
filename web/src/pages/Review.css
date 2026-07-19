@@ -1,0 +1,33 @@
+.review-manager-list {
+  margin-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.review-manager-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.review-manager-row__name {
+  font-weight: 500;
+}
+
+.review-manager-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.review-manager-row select {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  padding: 0.55rem 0.65rem;
+  min-width: 200px;
+}

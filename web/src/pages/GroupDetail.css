@@ -106,6 +106,13 @@
   min-width: 0;
 }
 
+.group-detail__posts {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
 .group-detail__sidebar {
   border: 1px solid var(--line);
   border-radius: var(--radius);

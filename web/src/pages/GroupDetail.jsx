@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { API_URL } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -7,12 +7,15 @@ import {
   joinGroup,
   leaveGroup,
   updateGroup,
+  deleteGroup,
   uploadGroupCoverImage,
   uploadGroupProfilePicture,
 } from '../api/groups';
 import { listEvents, submitEvent, uploadEventPoster } from '../api/events';
+import { listPosts, createPost } from '../api/posts';
 import { Button } from '../components/Button';
 import { StatusTag } from '../components/StatusTag';
+import { PostThread } from '../components/PostThread';
 import '../components/Card.css';
 import './Friends.css';
 import './GroupDetail.css';
@@ -28,12 +31,18 @@ function formatDate(iso) {
 
 export function GroupDetail() {
   const { documentId } = useParams();
+  const navigate = useNavigate();
   const { isAuthenticated, student, roleType, refreshStudent } = useAuth();
   const [group, setGroup] = useState(null);
   const [events, setEvents] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [membershipPending, setMembershipPending] = useState(false);
+
+  const [showPostForm, setShowPostForm] = useState(false);
+  const [newPostContent, setNewPostContent] = useState('');
+  const [submittingPost, setSubmittingPost] = useState(false);
 
   const [showEventForm, setShowEventForm] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
@@ -52,19 +61,23 @@ export function GroupDetail() {
   const [savingGroup, setSavingGroup] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingProfilePicture, setUploadingProfilePicture] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function load() {
     setLoading(true);
     try {
-      const [groupData, groupEvents] = await Promise.all([
+      const [groupData, groupEvents, groupPosts] = await Promise.all([
         getGroup(documentId),
         listEvents({ 'filters[group][documentId][$eq]': documentId, 'sort[0]': 'date:asc' }),
+        listPosts({ 'filters[group][documentId][$eq]': documentId }),
       ]);
       setGroup(groupData);
       setNameDraft(groupData.name || '');
       setDescriptionDraft(groupData.description || '');
       setCategoryDraft(groupData.category || '');
       setEvents(groupEvents);
+      setPosts(groupPosts);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -75,6 +88,7 @@ export function GroupDetail() {
   useEffect(() => {
     load();
     setEditingGroup(false);
+    setConfirmingDelete(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documentId]);
 
@@ -160,6 +174,23 @@ export function GroupDetail() {
     }
   }
 
+  async function handleSubmitPost(e) {
+    e.preventDefault();
+    if (!newPostContent.trim()) return;
+    setSubmittingPost(true);
+    try {
+      await createPost(documentId, newPostContent);
+      setNewPostContent('');
+      setShowPostForm(false);
+      const groupPosts = await listPosts({ 'filters[group][documentId][$eq]': documentId });
+      setPosts(groupPosts);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmittingPost(false);
+    }
+  }
+
   async function handleCoverChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -187,6 +218,17 @@ export function GroupDetail() {
       setError(err.message);
     } finally {
       setUploadingProfilePicture(false);
+    }
+  }
+
+  async function handleDeleteGroup() {
+    setDeleting(true);
+    try {
+      await deleteGroup(documentId);
+      navigate('/groups', { replace: true });
+    } catch (err) {
+      setError(err.message);
+      setDeleting(false);
     }
   }
 
@@ -246,6 +288,11 @@ export function GroupDetail() {
             </Button>
           )}
           {canManageGroup && (
+            <Button onClick={() => setShowPostForm((v) => !v)}>
+              {showPostForm ? 'CANCEL' : '+ NEW POST'}
+            </Button>
+          )}
+          {canManageGroup && (
             <Button onClick={() => setShowEventForm((v) => !v)}>
               {showEventForm ? 'CANCEL' : '+ NEW EVENT'}
             </Button>
@@ -255,8 +302,31 @@ export function GroupDetail() {
               {isMember ? 'LEAVE' : 'JOIN'}
             </Button>
           )}
+          {isCoordinator && !confirmingDelete && (
+            <Button variant="danger" onClick={() => setConfirmingDelete(true)}>
+              DELETE GROUP
+            </Button>
+          )}
+          {isCoordinator && confirmingDelete && (
+            <>
+              <Button variant="outline" disabled={deleting} onClick={() => setConfirmingDelete(false)}>
+                CANCEL
+              </Button>
+              <Button variant="danger" disabled={deleting} onClick={handleDeleteGroup}>
+                {deleting ? 'DELETING…' : 'CONFIRM DELETE'}
+              </Button>
+            </>
+          )}
         </div>
       </div>
+
+      {confirmingDelete && (
+        <p className="caption" style={{ color: 'var(--status-rejected)', marginTop: '0.75rem' }}>
+          This permanently deletes "{group.name}"
+          {group.members?.length ? ` for all ${group.members.length} member${group.members.length === 1 ? '' : 's'}` : ''}.
+          Its events and posts will remain but become ungrouped. This can't be undone.
+        </p>
+      )}
 
       {error && <p className="caption" style={{ color: 'var(--status-rejected)' }}>{error}</p>}
 
@@ -297,6 +367,41 @@ export function GroupDetail() {
           ) : (
             <p style={{ marginTop: '1.5rem' }}>{group.description}</p>
           )}
+
+          {canManageGroup && showPostForm && (
+            <form className="group-detail__form" onSubmit={handleSubmitPost} style={{ marginTop: '1.5rem' }}>
+              <label className="caption" htmlFor="post-content">NEW POST</label>
+              <textarea
+                id="post-content"
+                rows={3}
+                value={newPostContent}
+                onChange={(e) => setNewPostContent(e.target.value)}
+                placeholder="Share something with the group…"
+                required
+              />
+              <Button type="submit" disabled={submittingPost || !newPostContent.trim()}>
+                {submittingPost ? 'POSTING…' : 'POST'}
+              </Button>
+            </form>
+          )}
+
+          <section style={{ marginTop: '2rem' }}>
+            <h2>Posts</h2>
+            {posts.length === 0 && <p className="caption" style={{ marginTop: '0.5rem' }}>No posts yet.</p>}
+            {posts.length > 0 && (
+              <div className="group-detail__posts">
+                {posts.map((post) => (
+                  <PostThread
+                    key={post.documentId}
+                    post={post}
+                    isMember={isMember}
+                    canModerate={canManageGroup}
+                    currentStudentDocumentId={student?.documentId}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
 
           {canManageGroup && showEventForm && (
             <section style={{ marginTop: '3rem' }}>

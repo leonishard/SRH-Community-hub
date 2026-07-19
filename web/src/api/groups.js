@@ -19,6 +19,11 @@ export async function updateGroup(documentId, data) {
   return api.put(`/groups/${documentId}`, data);
 }
 
+/** Coordinator-only server-side (the group_manager role has no `delete` action enabled). */
+export async function deleteGroup(documentId) {
+  return api.del(`/groups/${documentId}`);
+}
+
 export async function uploadGroupCoverImage(file) {
   return uploadFile(file);
 }

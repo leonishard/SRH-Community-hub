@@ -4,6 +4,7 @@
 
 .app-layout__main {
   min-width: 0;
-  margin-top: var(--topbar-height);
+  max-width: 1200px;
+  margin: var(--topbar-height) auto 0;
   padding: 2rem 2.5rem;
 }

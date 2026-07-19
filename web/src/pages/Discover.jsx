@@ -8,18 +8,20 @@ import { Button } from '../components/Button';
 import '../components/Card.css';
 
 function DiscoverGroupCard({ group, isAuthenticated, pending, onJoin, t }) {
-  const thumbUrl = group.profilePicture?.url ? `${API_URL}${group.profilePicture.url}` : null;
+  const bannerUrl = group.coverImage?.url
+    ? `${API_URL}${group.coverImage.url}`
+    : group.profilePicture?.url
+      ? `${API_URL}${group.profilePicture.url}`
+      : null;
   return (
     <div className="card">
       <Link to={`/groups/${group.documentId}`} className="card__link">
-        <div className="card__thumb-row">
-          {thumbUrl ? (
-            <img className="card__thumb" src={thumbUrl} alt="" />
-          ) : (
-            <div className="card__thumb card__thumb--placeholder" />
-          )}
-          <div className="card__title">{group.name}</div>
-        </div>
+        {bannerUrl ? (
+          <img className="card__poster" src={bannerUrl} alt="" />
+        ) : (
+          <div className="card__poster card__poster--placeholder" />
+        )}
+        <div className="card__title">{group.name}</div>
         <div className="card__meta caption">
           {group.category}
           {group.members ? t.card.member(group.members.length) : ''}

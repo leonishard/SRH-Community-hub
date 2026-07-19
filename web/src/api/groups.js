@@ -3,7 +3,7 @@ import { api, uploadFile } from './client';
 export async function listGroups(params = {}) {
   const res = await api.get('/groups', {
     'pagination[pageSize]': 100,
-    populate: 'manager,members,profilePicture',
+    populate: 'manager,members,profilePicture,coverImage',
     ...params,
   });
   return res.data;

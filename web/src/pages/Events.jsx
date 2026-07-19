@@ -4,17 +4,9 @@ import { API_URL } from '../api/client';
 import { useLanguage } from '../context/LanguageContext';
 import { listEvents } from '../api/events';
 import { StatusTag } from '../components/StatusTag';
+import { EventDateBadge } from '../components/EventDateBadge';
 import '../components/Card.css';
 import './Events.css';
-
-function formatDate(iso) {
-  return new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 const EMPTY_FILTERS = { group: '', host: '', category: '' };
 
@@ -132,17 +124,15 @@ export function Events() {
                 ) : (
                   <div className="card__poster card__poster--placeholder" />
                 )}
+                <EventDateBadge iso={event.date} />
+                <div className="card__title">{event.title}</div>
                 <div className="card__meta">
                   {event.status !== 'approved' && <StatusTag status={event.status} />}
                   {event.category && <span className="caption">{event.category}</span>}
                   {event.group && <span className="caption">{event.group.name}</span>}
                 </div>
-                <div className="card__title">{event.title}</div>
                 <div className="card__description">{event.description}</div>
-                <div className="caption">
-                  {formatDate(event.date)}
-                  {event.location ? ` · ${event.location}` : ''}
-                </div>
+                {event.location && <div className="caption">{event.location}</div>}
                 {event.submittedBy && <div className="caption">{t.events.hostedBy} {event.submittedBy.name}</div>}
                 {typeof attendeeCount === 'number' && (
                   <div className="caption">{t.events.interested(attendeeCount)}</div>

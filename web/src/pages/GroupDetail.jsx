@@ -17,18 +17,10 @@ import { listPosts, createPost, uploadPostMedia } from '../api/posts';
 import { Button } from '../components/Button';
 import { StatusTag } from '../components/StatusTag';
 import { PostThread } from '../components/PostThread';
+import { EventDateBadge } from '../components/EventDateBadge';
 import '../components/Card.css';
 import './Friends.css';
 import './GroupDetail.css';
-
-function formatDate(iso) {
-  return new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 export function GroupDetail() {
   const { documentId } = useParams();
@@ -488,11 +480,12 @@ export function GroupDetail() {
                       ) : (
                         <div className="card__poster card__poster--placeholder" />
                       )}
+                      <EventDateBadge iso={event.date} />
+                      <div className="card__title">{event.title}</div>
                       <div className="card__meta">
                         <StatusTag status={event.status} />
                       </div>
-                      <div className="card__title">{event.title}</div>
-                      <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
+                      {event.location && <div className="caption">{event.location}</div>}
                     </Link>
                   );
                 })}
@@ -513,9 +506,10 @@ export function GroupDetail() {
                     ) : (
                       <div className="card__poster card__poster--placeholder" />
                     )}
+                    <EventDateBadge iso={event.date} />
                     <div className="card__title">{event.title}</div>
                     <div className="card__description">{event.description}</div>
-                    <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
+                    {event.location && <div className="caption">{event.location}</div>}
                   </Link>
                 );
               })}
@@ -535,9 +529,10 @@ export function GroupDetail() {
                     ) : (
                       <div className="card__poster card__poster--placeholder" />
                     )}
+                    <EventDateBadge iso={event.date} />
                     <div className="card__title">{event.title}</div>
                     <div className="card__description">{event.description}</div>
-                    <div className="caption">{formatDate(event.date)}{event.location ? ` · ${event.location}` : ''}</div>
+                    {event.location && <div className="caption">{event.location}</div>}
                   </Link>
                 );
               })}

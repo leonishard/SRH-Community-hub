@@ -3,7 +3,7 @@
  * Only synthesizes entries from data the backend already returned for this
  * user (role-scoped visibility is enforced server-side, not here).
  */
-export function buildLedgerEntries({ student, myGroupIds, events, posts, friendships }) {
+export function buildLedgerEntries({ student, myGroupIds, events, posts, friendships, t }) {
   const entries = [];
 
   for (const post of posts) {
@@ -12,7 +12,7 @@ export function buildLedgerEntries({ student, myGroupIds, events, posts, friends
       id: `post-${post.documentId}`,
       timestamp: post.createdAt,
       accent: '--signal',
-      text: `${post.author?.name || 'Someone'} posted in ${post.group?.name || 'a group'}`,
+      text: t.activity.postedIn(post.author?.name || t.activity.someone, post.group?.name || t.activity.aGroup),
     });
   }
 
@@ -24,14 +24,14 @@ export function buildLedgerEntries({ student, myGroupIds, events, posts, friends
         id: `event-decision-${event.documentId}`,
         timestamp: event.updatedAt,
         accent: event.status === 'approved' ? '--status-approved' : '--status-rejected',
-        text: `Event ${event.status} — ${event.title}`,
+        text: t.activity.eventStatus(event.status, event.title),
       });
     } else if (event.status === 'pending') {
       entries.push({
         id: `event-submitted-${event.documentId}`,
         timestamp: event.createdAt,
         accent: '--status-pending',
-        text: `New event submitted — ${event.title}`,
+        text: t.activity.newEventSubmitted(event.title),
       });
     }
   }
@@ -46,16 +46,14 @@ export function buildLedgerEntries({ student, myGroupIds, events, posts, friends
         id: `friendship-accepted-${friendship.documentId}`,
         timestamp: friendship.updatedAt,
         accent: '--signal',
-        text: `You and ${other.name} are now friends`,
+        text: t.activity.nowFriends(other.name),
       });
     } else if (friendship.status === 'pending') {
       entries.push({
         id: `friendship-pending-${friendship.documentId}`,
         timestamp: friendship.createdAt,
         accent: '--ash',
-        text: isRequester
-          ? `You sent ${other.name} a friend request`
-          : `${other.name} sent you a friend request`,
+        text: isRequester ? t.activity.sentRequest(other.name) : t.activity.receivedRequest(other.name),
       });
     }
   }

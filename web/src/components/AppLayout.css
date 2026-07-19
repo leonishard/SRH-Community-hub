@@ -4,6 +4,6 @@
 
 .app-layout__main {
   min-width: 0;
-  margin-left: var(--sidebar-width);
+  margin-top: var(--topbar-height);
   padding: 2rem 2.5rem;
 }

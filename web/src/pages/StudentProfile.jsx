@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { API_URL } from '../api/client';
+import { useLanguage } from '../context/LanguageContext';
 import { getStudentProfile, updateStudentProfile, uploadProfilePicture } from '../api/students';
 import { Button } from '../components/Button';
 import { FriendActionButton } from '../components/FriendActionButton';
@@ -11,6 +12,7 @@ import './StudentProfile.css';
 export function StudentProfile() {
   const { documentId } = useParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,16 +46,16 @@ export function StudentProfile() {
   }, [documentId]);
 
   if (loading) {
-    return <p className="caption">Loading…</p>;
+    return <p className="caption">{t.groupDetail.loading}</p>;
   }
 
   if (error || !profile) {
     return (
       <div>
         <p className="caption">
-          <button type="button" className="link-button" onClick={() => navigate(-1)}>← Back</button>
+          <button type="button" className="link-button" onClick={() => navigate(-1)}>{t.studentProfile.back}</button>
         </p>
-        <h1>Profile not found</h1>
+        <h1>{t.studentProfile.notFound}</h1>
         {error && <p className="caption" style={{ color: 'var(--status-rejected)' }}>{error}</p>}
       </div>
     );
@@ -106,7 +108,7 @@ export function StudentProfile() {
   return (
     <div>
       <p className="caption">
-        <button type="button" className="link-button" onClick={() => navigate(-1)}>← Back</button>
+        <button type="button" className="link-button" onClick={() => navigate(-1)}>{t.studentProfile.back}</button>
       </p>
 
       <div className="student-profile__header">
@@ -122,7 +124,7 @@ export function StudentProfile() {
 
         {profile.isOwner ? (
           <Button variant={editing ? 'outline' : 'primary'} onClick={() => setEditing((v) => !v)}>
-            {editing ? 'CANCEL' : 'EDIT'}
+            {editing ? t.studentProfile.cancel : t.studentProfile.edit}
           </Button>
         ) : (
           <FriendActionButton targetDocumentId={documentId} status={profile.friendStatus} onChange={load} onError={setError} />
@@ -133,10 +135,10 @@ export function StudentProfile() {
 
       {editing ? (
         <section className="student-profile__edit">
-          <label className="caption" htmlFor="profile-photo">PROFILE PICTURE</label>
+          <label className="caption" htmlFor="profile-photo">{t.studentProfile.profilePicture}</label>
           <input id="profile-photo" type="file" accept="image/*" onChange={handlePhotoChange} disabled={uploadingPhoto} />
 
-          <label className="caption" htmlFor="profile-bio">BIO</label>
+          <label className="caption" htmlFor="profile-bio">{t.studentProfile.bio}</label>
           <textarea id="profile-bio" rows={4} value={bioDraft} onChange={(e) => setBioDraft(e.target.value)} />
 
           <label className="student-profile__checkbox caption">
@@ -145,7 +147,7 @@ export function StudentProfile() {
               checked={showGroupsDraft}
               onChange={(e) => setShowGroupsDraft(e.target.checked)}
             />
-            SHOW MY GROUPS ON PROFILE
+            {t.studentProfile.showGroups}
           </label>
 
           <label className="student-profile__checkbox caption">
@@ -154,11 +156,11 @@ export function StudentProfile() {
               checked={showFriendsDraft}
               onChange={(e) => setShowFriendsDraft(e.target.checked)}
             />
-            SHOW MY FRIENDS ON PROFILE
+            {t.studentProfile.showFriends}
           </label>
 
           <Button disabled={saving} onClick={handleSave}>
-            {saving ? 'SAVING…' : 'SAVE'}
+            {saving ? t.studentProfile.saving : t.studentProfile.save}
           </Button>
         </section>
       ) : (
@@ -167,13 +169,13 @@ export function StudentProfile() {
 
       {groupsVisible && (
         <section style={{ marginTop: '3rem' }}>
-          <h2>Groups</h2>
-          {groupsList.length === 0 && <p className="caption">Not a member of any group.</p>}
+          <h2>{t.studentProfile.groupsHeader}</h2>
+          {groupsList.length === 0 && <p className="caption">{t.studentProfile.noGroups}</p>}
           <div className="card-grid">
             {groupsList.map((group) => (
               <Link to={`/groups/${group.documentId}`} className="card card__link" key={group.documentId}>
                 <div className="card__title">{group.name}</div>
-                {group.isManager && <div className="caption">MANAGER</div>}
+                {group.isManager && <div className="caption">{t.studentProfile.manager}</div>}
               </Link>
             ))}
           </div>
@@ -182,8 +184,8 @@ export function StudentProfile() {
 
       {friendsVisible && (
         <section style={{ marginTop: '3rem' }}>
-          <h2>Friends</h2>
-          {profile.friends.length === 0 && <p className="caption">No friends yet.</p>}
+          <h2>{t.studentProfile.friendsHeader}</h2>
+          {profile.friends.length === 0 && <p className="caption">{t.studentProfile.noFriends}</p>}
           {profile.friends.map((friend) => (
             <Link to={`/students/${friend.documentId}`} className="friends-row" key={friend.documentId}>
               <span>{friend.name}</span>

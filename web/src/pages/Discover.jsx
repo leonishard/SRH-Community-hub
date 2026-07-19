@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { API_URL } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { listGroups, joinGroup } from '../api/groups';
 import { Button } from '../components/Button';
 import '../components/Card.css';
 
-function DiscoverGroupCard({ group, isAuthenticated, pending, onJoin }) {
+function DiscoverGroupCard({ group, isAuthenticated, pending, onJoin, t }) {
   const thumbUrl = group.profilePicture?.url ? `${API_URL}${group.profilePicture.url}` : null;
   return (
     <div className="card">
@@ -21,14 +22,14 @@ function DiscoverGroupCard({ group, isAuthenticated, pending, onJoin }) {
         </div>
         <div className="card__meta caption">
           {group.category}
-          {group.members ? ` · ${group.members.length} member${group.members.length === 1 ? '' : 's'}` : ''}
+          {group.members ? t.card.member(group.members.length) : ''}
         </div>
         <div className="card__description">{group.description}</div>
       </Link>
       {isAuthenticated && (
         <div className="card__footer">
           <Button disabled={pending} onClick={() => onJoin(group)}>
-            JOIN
+            {t.discover.join}
           </Button>
         </div>
       )}
@@ -36,7 +37,7 @@ function DiscoverGroupCard({ group, isAuthenticated, pending, onJoin }) {
   );
 }
 
-function DiscoverSection({ title, blurb, groups, isAuthenticated, pendingId, onJoin }) {
+function DiscoverSection({ title, blurb, groups, isAuthenticated, pendingId, onJoin, t }) {
   if (groups.length === 0) return null;
   return (
     <section style={{ marginTop: '2.5rem' }}>
@@ -56,6 +57,7 @@ function DiscoverSection({ title, blurb, groups, isAuthenticated, pendingId, onJ
             isAuthenticated={isAuthenticated}
             pending={pendingId === group.documentId}
             onJoin={onJoin}
+            t={t}
           />
         ))}
       </div>
@@ -65,6 +67,7 @@ function DiscoverSection({ title, blurb, groups, isAuthenticated, pendingId, onJ
 
 export function Discover() {
   const { isAuthenticated, student, refreshStudent } = useAuth();
+  const { t } = useLanguage();
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -119,45 +122,46 @@ export function Discover() {
 
   return (
     <div>
-      <h1>Discover</h1>
+      <h1>{t.discover.title}</h1>
       <p className="caption" style={{ marginTop: '0.5rem' }}>
-        {isAuthenticated
-          ? 'Recommended for you, what people are joining, and what just launched.'
-          : 'Sign in to get recommendations based on the groups you follow.'}
+        {isAuthenticated ? t.discover.subtitleAuth : t.discover.subtitleGuest}
       </p>
 
-      {loading && <p className="caption">Loading groups…</p>}
+      {loading && <p className="caption">{t.discover.loadingGroups}</p>}
       {error && <p className="caption" style={{ color: 'var(--status-rejected)' }}>{error}</p>}
 
       {nothingToDiscover && (
         <p className="caption" style={{ marginTop: '1.5rem' }}>
-          You're already a member of every group — check Groups for the full list.
+          {t.discover.allJoined}
         </p>
       )}
 
       <DiscoverSection
-        title="RECOMMENDED FOR YOU"
-        blurb="Because you're in a similar group already."
+        title={t.discover.recommendedTitle}
+        blurb={t.discover.recommendedBlurb}
         groups={recommended}
         isAuthenticated={isAuthenticated}
         pendingId={pendingId}
         onJoin={handleJoin}
+        t={t}
       />
       <DiscoverSection
-        title="POPULAR GROUPS"
-        blurb="The most-joined groups on the Hub."
+        title={t.discover.popularTitle}
+        blurb={t.discover.popularBlurb}
         groups={popular}
         isAuthenticated={isAuthenticated}
         pendingId={pendingId}
         onJoin={handleJoin}
+        t={t}
       />
       <DiscoverSection
-        title="NEW GROUPS"
-        blurb="Recently created — be one of the first to join."
+        title={t.discover.newTitle}
+        blurb={t.discover.newBlurb}
         groups={newest}
         isAuthenticated={isAuthenticated}
         pendingId={pendingId}
         onJoin={handleJoin}
+        t={t}
       />
     </div>
   );

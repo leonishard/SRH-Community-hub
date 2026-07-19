@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext';
 import './StatusTag.css';
 
 const COLOR_VAR = {
@@ -7,10 +8,11 @@ const COLOR_VAR = {
 };
 
 export function StatusTag({ status }) {
+  const { t } = useLanguage();
   const colorVar = COLOR_VAR[status] || '--ash';
   return (
     <span className="status-tag mono" style={{ '--tag-color': `var(${colorVar})` }}>
-      {status.toUpperCase()}
+      {t.status[status] || status.toUpperCase()}
     </span>
   );
 }

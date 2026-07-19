@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { listEvents, reviewEvent } from '../api/events';
 import { listGroupProposals, reviewGroupProposal } from '../api/groupProposals';
 import { listGroups, updateGroup, deleteGroup } from '../api/groups';
@@ -10,7 +11,7 @@ import { Toast } from '../components/Toast';
 import '../components/Card.css';
 import './Review.css';
 
-function GroupManagerRow({ group, students, onChanged, showToast, setError }) {
+function GroupManagerRow({ group, students, onChanged, showToast, setError, t }) {
   const [pending, setPending] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const currentManagerId = group.manager?.documentId || '';
@@ -22,9 +23,7 @@ function GroupManagerRow({ group, students, onChanged, showToast, setError }) {
       await updateGroup(group.documentId, { manager: newManagerId || null });
       const newManagerName = newManagerId ? students.find((s) => s.documentId === newManagerId)?.name : null;
       showToast(
-        newManagerName
-          ? `${newManagerName} is now managing ${group.name}.`
-          : `${group.name} no longer has a manager.`
+        newManagerName ? t.review.managerAssigned(newManagerName, group.name) : t.review.managerRemoved(group.name)
       );
       await onChanged();
     } catch (err) {
@@ -38,7 +37,7 @@ function GroupManagerRow({ group, students, onChanged, showToast, setError }) {
     setPending(true);
     try {
       await deleteGroup(group.documentId);
-      showToast(`${group.name} was deleted.`);
+      showToast(t.review.groupDeleted(group.name));
       await onChanged();
     } catch (err) {
       setError(err.message);
@@ -55,7 +54,7 @@ function GroupManagerRow({ group, students, onChanged, showToast, setError }) {
       </div>
       <div className="review-manager-row__actions">
         <select value={currentManagerId} onChange={handleChange} disabled={pending}>
-          <option value="">— No manager —</option>
+          <option value="">{t.review.noManager}</option>
           {students.map((s) => (
             <option key={s.documentId} value={s.documentId}>
               {s.name}
@@ -65,15 +64,15 @@ function GroupManagerRow({ group, students, onChanged, showToast, setError }) {
         {confirmingDelete ? (
           <>
             <button type="button" className="link-button caption" disabled={pending} onClick={() => setConfirmingDelete(false)}>
-              CANCEL
+              {t.review.cancel}
             </button>
             <Button variant="danger" disabled={pending} onClick={handleDelete}>
-              CONFIRM
+              {t.review.confirm}
             </Button>
           </>
         ) : (
           <Button variant="danger" disabled={pending} onClick={() => setConfirmingDelete(true)}>
-            DELETE
+            {t.review.delete}
           </Button>
         )}
       </div>
@@ -83,6 +82,7 @@ function GroupManagerRow({ group, students, onChanged, showToast, setError }) {
 
 export function Review() {
   const { roleType } = useAuth();
+  const { t } = useLanguage();
   const [events, setEvents] = useState([]);
   const [proposals, setProposals] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -122,9 +122,9 @@ export function Review() {
   if (!isCoordinator) {
     return (
       <div>
-        <h1>Review</h1>
+        <h1>{t.review.title}</h1>
         <p className="caption" style={{ marginTop: '0.5rem' }}>
-          Only Coordinators can review pending Events and Group Proposals.
+          {t.review.notCoordinator}
         </p>
       </div>
     );
@@ -138,7 +138,7 @@ export function Review() {
     setPendingId(event.documentId);
     try {
       await reviewEvent(event.documentId, status);
-      showToast(`${event.title} ${status}.`);
+      showToast(t.review.eventDecided(event.title, status));
       await load();
     } catch (err) {
       setError(err.message);
@@ -153,8 +153,8 @@ export function Review() {
       await reviewGroupProposal(proposal.documentId, status);
       showToast(
         status === 'approved'
-          ? `${proposal.name} approved — ${proposal.submittedBy?.name || 'the submitter'} is now its manager.`
-          : `${proposal.name} rejected.`
+          ? t.review.proposalApproved(proposal.name, proposal.submittedBy?.name || t.review.theSubmitter)
+          : t.review.proposalRejected(proposal.name)
       );
       await load();
     } catch (err) {
@@ -166,18 +166,18 @@ export function Review() {
 
   return (
     <div>
-      <h1>Review</h1>
+      <h1>{t.review.title}</h1>
       <p className="caption" style={{ marginTop: '0.5rem' }}>
-        Pending Events and Group Proposals awaiting a decision, plus who manages each group.
+        {t.review.subtitle}
       </p>
 
       {error && <p className="caption" style={{ color: 'var(--status-rejected)' }}>{error}</p>}
-      {loading && <p className="caption">Loading…</p>}
+      {loading && <p className="caption">{t.review.loading}</p>}
 
       {!loading && (
         <>
-          <h2 style={{ marginTop: '2rem' }}>Group Proposals</h2>
-          {proposals.length === 0 && <p className="caption">Nothing pending.</p>}
+          <h2 style={{ marginTop: '2rem' }}>{t.review.groupProposalsHeader}</h2>
+          {proposals.length === 0 && <p className="caption">{t.review.nothingPending}</p>}
           <div className="card-grid">
             {proposals.map((proposal) => (
               <div className="card" key={proposal.documentId}>
@@ -185,7 +185,7 @@ export function Review() {
                 <div className="card__description">{proposal.description}</div>
                 {proposal.submittedBy && (
                   <div className="caption">
-                    Submitted by <Link to={`/students/${proposal.submittedBy.documentId}`}>{proposal.submittedBy.name}</Link>
+                    {t.review.submittedBy} <Link to={`/students/${proposal.submittedBy.documentId}`}>{proposal.submittedBy.name}</Link>
                   </div>
                 )}
                 <div className="card__footer">
@@ -193,22 +193,22 @@ export function Review() {
                     disabled={pendingId === proposal.documentId}
                     onClick={() => handleProposalDecision(proposal, 'approved')}
                   >
-                    APPROVE
+                    {t.review.approve}
                   </Button>
                   <Button
                     variant="outline"
                     disabled={pendingId === proposal.documentId}
                     onClick={() => handleProposalDecision(proposal, 'rejected')}
                   >
-                    REJECT
+                    {t.review.reject}
                   </Button>
                 </div>
               </div>
             ))}
           </div>
 
-          <h2 style={{ marginTop: '2rem' }}>Events</h2>
-          {events.length === 0 && <p className="caption">Nothing pending.</p>}
+          <h2 style={{ marginTop: '2rem' }}>{t.review.eventsHeader}</h2>
+          {events.length === 0 && <p className="caption">{t.review.nothingPending}</p>}
           <div className="card-grid">
             {events.map((event) => (
               <div className="card" key={event.documentId}>
@@ -217,7 +217,7 @@ export function Review() {
                 <div className="card__description">{event.description}</div>
                 {event.submittedBy && (
                   <div className="caption">
-                    Submitted by <Link to={`/students/${event.submittedBy.documentId}`}>{event.submittedBy.name}</Link>
+                    {t.review.submittedBy} <Link to={`/students/${event.submittedBy.documentId}`}>{event.submittedBy.name}</Link>
                   </div>
                 )}
                 <div className="card__footer">
@@ -225,24 +225,23 @@ export function Review() {
                     disabled={pendingId === event.documentId}
                     onClick={() => handleEventDecision(event, 'approved')}
                   >
-                    APPROVE
+                    {t.review.approve}
                   </Button>
                   <Button
                     variant="outline"
                     disabled={pendingId === event.documentId}
                     onClick={() => handleEventDecision(event, 'rejected')}
                   >
-                    REJECT
+                    {t.review.reject}
                   </Button>
                 </div>
               </div>
             ))}
           </div>
 
-          <h2 style={{ marginTop: '2rem' }}>Manage Groups</h2>
+          <h2 style={{ marginTop: '2rem' }}>{t.review.manageGroupsHeader}</h2>
           <p className="caption" style={{ marginTop: '0.35rem' }}>
-            Reassign or remove a group's manager — changing this updates their permissions immediately —
-            or delete a group entirely.
+            {t.review.manageGroupsSubtitle}
           </p>
           <div className="review-manager-list">
             {groups.map((group) => (
@@ -253,6 +252,7 @@ export function Review() {
                 onChanged={load}
                 showToast={showToast}
                 setError={setError}
+                t={t}
               />
             ))}
           </div>

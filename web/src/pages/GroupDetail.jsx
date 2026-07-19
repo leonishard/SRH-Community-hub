@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { API_URL } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import {
   getGroup,
   joinGroup,
@@ -33,6 +34,7 @@ export function GroupDetail() {
   const { documentId } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, student, roleType, refreshStudent } = useAuth();
+  const { t } = useLanguage();
   const [group, setGroup] = useState(null);
   const [events, setEvents] = useState([]);
   const [posts, setPosts] = useState([]);
@@ -94,16 +96,16 @@ export function GroupDetail() {
   }, [documentId]);
 
   if (loading) {
-    return <p className="caption">Loading…</p>;
+    return <p className="caption">{t.groupDetail.loading}</p>;
   }
 
   if (error || !group) {
     return (
       <div>
-        <h1>Group not found</h1>
+        <h1>{t.groupDetail.notFound}</h1>
         {error && <p className="caption" style={{ color: 'var(--status-rejected)' }}>{error}</p>}
         <p className="caption" style={{ marginTop: '0.5rem' }}>
-          <Link to="/groups">Back to Groups</Link>
+          <Link to="/groups">{t.groupDetail.backToGroups}</Link>
         </p>
       </div>
     );
@@ -161,7 +163,7 @@ export function GroupDetail() {
       setEventLocation('');
       setEventCategory('');
       setEventPoster(null);
-      setEventNotice('Event submitted — awaiting Coordinator approval.');
+      setEventNotice(t.groupDetail.eventSubmitted);
       setShowEventForm(false);
       const groupEvents = await listEvents({
         'filters[group][documentId][$eq]': documentId,
@@ -255,7 +257,7 @@ export function GroupDetail() {
   return (
     <div>
       <p className="caption">
-        <Link to="/groups">← Back to Groups</Link>
+        <Link to="/groups">{t.groupDetail.backToGroups}</Link>
       </p>
 
       <div className="group-detail__cover">
@@ -275,11 +277,11 @@ export function GroupDetail() {
             <h1>{group.name}</h1>
             <div className="card__meta caption" style={{ marginTop: '0.5rem' }}>
               {group.category}
-              {group.members ? ` · ${group.members.length} member${group.members.length === 1 ? '' : 's'}` : ''}
+              {group.members ? t.card.member(group.members.length) : ''}
             </div>
             {group.manager && (
               <div className="caption" style={{ marginTop: '0.25rem' }}>
-                Managed by <Link to={`/students/${group.manager.documentId}`}>{group.manager.name}</Link>
+                {t.groupDetail.managedBy} <Link to={`/students/${group.manager.documentId}`}>{group.manager.name}</Link>
               </div>
             )}
           </div>
@@ -287,36 +289,36 @@ export function GroupDetail() {
         <div className="group-detail__header-actions">
           {canManageGroup && (
             <Button variant={editingGroup ? 'outline' : 'primary'} onClick={() => setEditingGroup((v) => !v)}>
-              {editingGroup ? 'CANCEL' : 'EDIT GROUP'}
+              {editingGroup ? t.groupDetail.cancel : t.groupDetail.editGroup}
             </Button>
           )}
           {canManageGroup && (
             <Button onClick={() => setShowPostForm((v) => !v)}>
-              {showPostForm ? 'CANCEL' : '+ NEW POST'}
+              {showPostForm ? t.groupDetail.cancel : t.groupDetail.newPost}
             </Button>
           )}
           {canManageGroup && (
             <Button onClick={() => setShowEventForm((v) => !v)}>
-              {showEventForm ? 'CANCEL' : '+ NEW EVENT'}
+              {showEventForm ? t.groupDetail.cancel : t.groupDetail.newEvent}
             </Button>
           )}
           {isAuthenticated && (
             <Button variant={isMember ? 'outline' : 'primary'} disabled={membershipPending} onClick={handleToggleMembership}>
-              {isMember ? 'LEAVE' : 'JOIN'}
+              {isMember ? t.groupDetail.leave : t.groupDetail.join}
             </Button>
           )}
           {isCoordinator && !confirmingDelete && (
             <Button variant="danger" onClick={() => setConfirmingDelete(true)}>
-              DELETE GROUP
+              {t.groupDetail.deleteGroup}
             </Button>
           )}
           {isCoordinator && confirmingDelete && (
             <>
               <Button variant="outline" disabled={deleting} onClick={() => setConfirmingDelete(false)}>
-                CANCEL
+                {t.groupDetail.cancel}
               </Button>
               <Button variant="danger" disabled={deleting} onClick={handleDeleteGroup}>
-                {deleting ? 'DELETING…' : 'CONFIRM DELETE'}
+                {deleting ? t.groupDetail.deleting : t.groupDetail.confirmDelete}
               </Button>
             </>
           )}
@@ -325,9 +327,10 @@ export function GroupDetail() {
 
       {confirmingDelete && (
         <p className="caption" style={{ color: 'var(--status-rejected)', marginTop: '0.75rem' }}>
-          This permanently deletes "{group.name}"
-          {group.members?.length ? ` for all ${group.members.length} member${group.members.length === 1 ? '' : 's'}` : ''}.
-          Its events and posts will remain but become ungrouped. This can't be undone.
+          {t.groupDetail.deleteWarning(
+            group.name,
+            group.members?.length ? t.groupDetail.memberClause(group.members.length) : ''
+          )}
         </p>
       )}
 
@@ -337,7 +340,7 @@ export function GroupDetail() {
         <div className="group-detail__main">
           {editingGroup ? (
             <section className="group-detail__form">
-              <label className="caption" htmlFor="group-profile-picture">PROFILE PICTURE</label>
+              <label className="caption" htmlFor="group-profile-picture">{t.groupDetail.profilePicture}</label>
               <input
                 id="group-profile-picture"
                 type="file"
@@ -346,16 +349,16 @@ export function GroupDetail() {
                 disabled={uploadingProfilePicture}
               />
 
-              <label className="caption" htmlFor="group-cover">COVER IMAGE (BANNER)</label>
+              <label className="caption" htmlFor="group-cover">{t.groupDetail.coverImage}</label>
               <input id="group-cover" type="file" accept="image/*" onChange={handleCoverChange} disabled={uploadingCover} />
 
-              <label className="caption" htmlFor="group-name">NAME</label>
+              <label className="caption" htmlFor="group-name">{t.groupDetail.name}</label>
               <input id="group-name" value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} required />
 
-              <label className="caption" htmlFor="group-category">CATEGORY</label>
+              <label className="caption" htmlFor="group-category">{t.groupDetail.category}</label>
               <input id="group-category" value={categoryDraft} onChange={(e) => setCategoryDraft(e.target.value)} />
 
-              <label className="caption" htmlFor="group-description">DESCRIPTION</label>
+              <label className="caption" htmlFor="group-description">{t.groupDetail.description}</label>
               <textarea
                 id="group-description"
                 rows={4}
@@ -364,7 +367,7 @@ export function GroupDetail() {
               />
 
               <Button disabled={savingGroup} onClick={handleSaveGroup}>
-                {savingGroup ? 'SAVING…' : 'SAVE'}
+                {savingGroup ? t.groupDetail.saving : t.groupDetail.save}
               </Button>
             </section>
           ) : (
@@ -373,16 +376,16 @@ export function GroupDetail() {
 
           {canManageGroup && showPostForm && (
             <form className="group-detail__form" onSubmit={handleSubmitPost} style={{ marginTop: '1.5rem' }}>
-              <label className="caption" htmlFor="post-content">NEW POST</label>
+              <label className="caption" htmlFor="post-content">{t.groupDetail.newPostLabel}</label>
               <textarea
                 id="post-content"
                 rows={3}
                 value={newPostContent}
                 onChange={(e) => setNewPostContent(e.target.value)}
-                placeholder="Share something with the group…"
+                placeholder={t.groupDetail.postPlaceholder}
                 required
               />
-              <label className="caption" htmlFor="post-media">PHOTOS &amp; VIDEOS (OPTIONAL)</label>
+              <label className="caption" htmlFor="post-media">{t.groupDetail.mediaLabel}</label>
               <input
                 id="post-media"
                 type="file"
@@ -392,18 +395,18 @@ export function GroupDetail() {
               />
               {newPostMedia.length > 0 && (
                 <p className="caption" style={{ marginTop: '0.25rem' }}>
-                  {newPostMedia.length} file{newPostMedia.length === 1 ? '' : 's'} selected
+                  {t.groupDetail.filesSelected(newPostMedia.length)}
                 </p>
               )}
               <Button type="submit" disabled={submittingPost || !newPostContent.trim()}>
-                {submittingPost ? 'POSTING…' : 'POST'}
+                {submittingPost ? t.groupDetail.posting : t.groupDetail.post}
               </Button>
             </form>
           )}
 
           <section style={{ marginTop: '2rem' }}>
-            <h2>Posts</h2>
-            {posts.length === 0 && <p className="caption" style={{ marginTop: '0.5rem' }}>No posts yet.</p>}
+            <h2>{t.groupDetail.postsHeader}</h2>
+            {posts.length === 0 && <p className="caption" style={{ marginTop: '0.5rem' }}>{t.groupDetail.noPosts}</p>}
             {posts.length > 0 && (
               <div className="group-detail__posts">
                 {posts.map((post) => (
@@ -421,12 +424,12 @@ export function GroupDetail() {
 
           {canManageGroup && showEventForm && (
             <section style={{ marginTop: '3rem' }}>
-              <h2>Submit a new event</h2>
+              <h2>{t.groupDetail.submitEventHeader}</h2>
               <form onSubmit={handleSubmitEvent} className="group-detail__form">
-                <label className="caption" htmlFor="event-title">TITLE</label>
+                <label className="caption" htmlFor="event-title">{t.groupDetail.eventTitle}</label>
                 <input id="event-title" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} required />
 
-                <label className="caption" htmlFor="event-description">DESCRIPTION</label>
+                <label className="caption" htmlFor="event-description">{t.groupDetail.eventDescription}</label>
                 <textarea
                   id="event-description"
                   value={eventDescription}
@@ -434,7 +437,7 @@ export function GroupDetail() {
                   rows={3}
                 />
 
-                <label className="caption" htmlFor="event-date">DATE &amp; TIME</label>
+                <label className="caption" htmlFor="event-date">{t.groupDetail.eventDateTime}</label>
                 <input
                   id="event-date"
                   type="datetime-local"
@@ -443,18 +446,18 @@ export function GroupDetail() {
                   required
                 />
 
-                <label className="caption" htmlFor="event-location">LOCATION</label>
+                <label className="caption" htmlFor="event-location">{t.groupDetail.eventLocation}</label>
                 <input id="event-location" value={eventLocation} onChange={(e) => setEventLocation(e.target.value)} />
 
-                <label className="caption" htmlFor="event-category">CATEGORY</label>
+                <label className="caption" htmlFor="event-category">{t.groupDetail.eventCategory}</label>
                 <input
                   id="event-category"
                   value={eventCategory}
                   onChange={(e) => setEventCategory(e.target.value)}
-                  placeholder="e.g. Workshop, Social, Competition"
+                  placeholder={t.groupDetail.eventCategoryPlaceholder}
                 />
 
-                <label className="caption" htmlFor="event-poster">POSTER</label>
+                <label className="caption" htmlFor="event-poster">{t.groupDetail.eventPoster}</label>
                 <input
                   id="event-poster"
                   type="file"
@@ -463,7 +466,7 @@ export function GroupDetail() {
                 />
 
                 <Button type="submit" disabled={submittingEvent}>
-                  {submittingEvent ? 'SUBMITTING…' : 'SUBMIT EVENT'}
+                  {submittingEvent ? t.groupDetail.submitting : t.groupDetail.submitEvent}
                 </Button>
               </form>
             </section>
@@ -473,7 +476,7 @@ export function GroupDetail() {
           {canManageGroup && pending.length > 0 && (
             <div style={{ marginTop: '3rem' }}>
               <h2 className="mono" style={{ fontSize: '0.8125rem', color: 'var(--ash-fg)', letterSpacing: '0.06em' }}>
-                AWAITING APPROVAL
+                {t.groupDetail.awaitingApproval}
               </h2>
               <div className="card-grid">
                 {pending.map((event) => {
@@ -498,8 +501,8 @@ export function GroupDetail() {
           )}
 
           <section style={{ marginTop: '3rem' }}>
-            <h2>Upcoming events</h2>
-            {upcoming.length === 0 && <p className="caption">No upcoming events.</p>}
+            <h2>{t.groupDetail.upcomingEventsHeader}</h2>
+            {upcoming.length === 0 && <p className="caption">{t.groupDetail.noUpcoming}</p>}
             <div className="card-grid">
               {upcoming.map((event) => {
                 const posterUrl = event.poster?.url ? `${API_URL}${event.poster.url}` : null;
@@ -520,8 +523,8 @@ export function GroupDetail() {
           </section>
 
           <section style={{ marginTop: '3rem' }}>
-            <h2>Past events</h2>
-            {past.length === 0 && <p className="caption">No past events yet.</p>}
+            <h2>{t.groupDetail.pastEventsHeader}</h2>
+            {past.length === 0 && <p className="caption">{t.groupDetail.noPast}</p>}
             <div className="card-grid">
               {past.map((event) => {
                 const posterUrl = event.poster?.url ? `${API_URL}${event.poster.url}` : null;
@@ -545,7 +548,7 @@ export function GroupDetail() {
         {group.members && group.members.length > 0 && (
           <aside className="group-detail__sidebar">
             <h2 className="mono" style={{ fontSize: '0.8125rem', color: 'var(--ash-fg)', letterSpacing: '0.06em' }}>
-              MEMBERS ({group.members.length})
+              {t.groupDetail.membersHeader(group.members.length)}
             </h2>
             {group.members.map((member) => (
               <Link to={`/students/${member.documentId}`} className="friends-row" key={member.documentId}>

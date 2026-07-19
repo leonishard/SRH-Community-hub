@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { API_URL } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { listGroups, joinGroup, leaveGroup } from '../api/groups';
 import { listGroupProposals, submitGroupProposal, uploadGroupProposalImage } from '../api/groupProposals';
 import { Button } from '../components/Button';
@@ -11,6 +12,7 @@ import './Groups.css';
 
 export function Groups() {
   const { isAuthenticated, student, refreshStudent } = useAuth();
+  const { t } = useLanguage();
   const [groups, setGroups] = useState([]);
   const [proposals, setProposals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,7 +92,7 @@ export function Groups() {
         coverImage: uploadedCoverImage?.id,
       });
       resetProposalForm();
-      setProposalNotice('Proposal submitted — a Coordinator will review it.');
+      setProposalNotice(t.groups.proposalSubmitted);
       setShowProposalForm(false);
       await loadProposals();
     } catch (err) {
@@ -104,24 +106,24 @@ export function Groups() {
     <div>
       <div className="groups-header">
         <div>
-          <h1>Groups</h1>
+          <h1>{t.groups.title}</h1>
           <p className="caption" style={{ marginTop: '0.5rem' }}>
-            Every group in the Ambassador Hub.
+            {t.groups.subtitle}
           </p>
         </div>
         {isAuthenticated && (
           <Button onClick={() => setShowProposalForm((v) => !v)}>
-            {showProposalForm ? 'CANCEL' : '+ NEW GROUP'}
+            {showProposalForm ? t.groups.cancel : t.groups.newGroup}
           </Button>
         )}
       </div>
 
       {showProposalForm && (
         <section className="groups-proposal-form">
-          <h2>Propose a new group</h2>
+          <h2>{t.groups.proposeTitle}</h2>
           <form onSubmit={handleSubmitProposal} style={{ marginTop: '1rem', maxWidth: '480px' }}>
             <label className="caption" htmlFor="proposal-name">
-              NAME
+              {t.groups.name}
             </label>
             <input
               id="proposal-name"
@@ -131,17 +133,17 @@ export function Groups() {
             />
 
             <label className="caption" htmlFor="proposal-category">
-              CATEGORY
+              {t.groups.category}
             </label>
             <input
               id="proposal-category"
               value={proposalCategory}
               onChange={(e) => setProposalCategory(e.target.value)}
-              placeholder="e.g. Technology, Arts, Outdoors"
+              placeholder={t.groups.categoryPlaceholder}
             />
 
             <label className="caption" htmlFor="proposal-description">
-              DESCRIPTION
+              {t.groups.description}
             </label>
             <textarea
               id="proposal-description"
@@ -151,7 +153,7 @@ export function Groups() {
             />
 
             <label className="caption" htmlFor="proposal-profile-picture">
-              PROFILE PICTURE
+              {t.groups.profilePicture}
             </label>
             <input
               id="proposal-profile-picture"
@@ -161,7 +163,7 @@ export function Groups() {
             />
 
             <label className="caption" htmlFor="proposal-cover-image">
-              COVER IMAGE (BANNER)
+              {t.groups.coverImage}
             </label>
             <input
               id="proposal-cover-image"
@@ -171,7 +173,7 @@ export function Groups() {
             />
 
             <Button type="submit" disabled={submittingProposal}>
-              {submittingProposal ? 'SUBMITTING…' : 'SUBMIT PROPOSAL'}
+              {submittingProposal ? t.groups.submitting : t.groups.submit}
             </Button>
           </form>
         </section>
@@ -179,7 +181,7 @@ export function Groups() {
       {proposalNotice && <p className="caption" style={{ marginTop: '1rem' }}>{proposalNotice}</p>}
 
       {error && <p className="caption" style={{ color: 'var(--status-rejected)' }}>{error}</p>}
-      {loading && <p className="caption">Loading groups…</p>}
+      {loading && <p className="caption">{t.groups.loading}</p>}
 
       {!loading && !error && (
         <div className="card-grid">
@@ -199,13 +201,13 @@ export function Groups() {
                   </div>
                   <div className="card__meta caption">
                     {group.category}
-                    {group.members ? ` · ${group.members.length} member${group.members.length === 1 ? '' : 's'}` : ''}
+                    {group.members ? t.card.member(group.members.length) : ''}
                   </div>
                   <div className="card__description">{group.description}</div>
                 </Link>
                 {group.manager && (
                   <div className="caption">
-                    Managed by <Link to={`/students/${group.manager.documentId}`}>{group.manager.name}</Link>
+                    {t.groups.managedBy} <Link to={`/students/${group.manager.documentId}`}>{group.manager.name}</Link>
                   </div>
                 )}
                 {isAuthenticated && (
@@ -215,7 +217,7 @@ export function Groups() {
                       disabled={pendingId === group.documentId}
                       onClick={() => handleToggleMembership(group)}
                     >
-                      {isMember ? 'LEAVE' : 'JOIN'}
+                      {isMember ? t.groups.leave : t.groups.join}
                     </Button>
                   </div>
                 )}
@@ -228,7 +230,7 @@ export function Groups() {
       {isAuthenticated && myManagedGroups.length > 0 && (
         <section style={{ marginTop: '3rem' }}>
           <h2 className="mono" style={{ fontSize: '0.8125rem', color: 'var(--ash-fg)', letterSpacing: '0.06em' }}>
-            MY GROUPS
+            {t.groups.myGroupsHeader}
           </h2>
           {myManagedGroups.map((group) => (
             <Link
@@ -237,7 +239,7 @@ export function Groups() {
               className="groups-list-row"
             >
               <span>{group.name}</span>
-              <span className="caption">MANAGER</span>
+              <span className="caption">{t.groups.manager}</span>
             </Link>
           ))}
         </section>
@@ -246,7 +248,7 @@ export function Groups() {
       {isAuthenticated && openProposals.length > 0 && (
         <section style={{ marginTop: '3rem' }}>
           <h2 className="mono" style={{ fontSize: '0.8125rem', color: 'var(--ash-fg)', letterSpacing: '0.06em' }}>
-            YOUR PROPOSALS
+            {t.groups.yourProposalsHeader}
           </h2>
           {openProposals.map((proposal) => (
             <div className="groups-list-row" key={proposal.documentId}>

@@ -119,7 +119,7 @@
   background: var(--surface);
   padding: 1.25rem;
   position: sticky;
-  top: 2rem;
+  top: calc(var(--topbar-height) + 1.5rem);
 }
 
 @media (max-width: 860px) {

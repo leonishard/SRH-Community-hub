@@ -23,7 +23,7 @@
   --font-mono: 'IBM Plex Mono', monospace;
 
   --radius: 2px;
-  --sidebar-width: 220px;
+  --topbar-height: 84px;
 
   color-scheme: dark light;
 }

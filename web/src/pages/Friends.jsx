@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { listFriendships, sendFriendRequest, acceptFriendRequest, removeFriendship } from '../api/friendships';
 import { listStudents } from '../api/students';
 import { Button } from '../components/Button';
@@ -8,6 +9,7 @@ import './Friends.css';
 
 export function Friends() {
   const { student } = useAuth();
+  const { t } = useLanguage();
   const [friendships, setFriendships] = useState([]);
   const [students, setStudents] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState('');
@@ -36,9 +38,9 @@ export function Friends() {
   if (!student) {
     return (
       <div>
-        <h1>Friends</h1>
+        <h1>{t.friends.title}</h1>
         <p className="caption" style={{ marginTop: '0.5rem' }}>
-          Sign in to see and manage your friends.
+          {t.friends.signInPrompt}
         </p>
       </div>
     );
@@ -91,21 +93,21 @@ export function Friends() {
 
   return (
     <div>
-      <h1>Friends</h1>
+      <h1>{t.friends.title}</h1>
       {error && <p className="caption" style={{ color: 'var(--status-rejected)' }}>{error}</p>}
-      {loading && <p className="caption">Loading…</p>}
+      {loading && <p className="caption">{t.friends.loading}</p>}
 
       {!loading && (
         <>
           <section className="friends-section">
-            <h2 className="friends-section__title mono">ADD A FRIEND</h2>
+            <h2 className="friends-section__title mono">{t.friends.addFriendHeader}</h2>
             <div className="friends-add">
               <select
                 className="friends-add__select"
                 value={selectedStudentId}
                 onChange={(e) => setSelectedStudentId(e.target.value)}
               >
-                <option value="">Select a student…</option>
+                <option value="">{t.friends.selectStudent}</option>
                 {addable.map((s) => (
                   <option key={s.documentId} value={s.documentId}>
                     {s.name}
@@ -113,14 +115,14 @@ export function Friends() {
                 ))}
               </select>
               <Button disabled={!selectedStudentId || pendingId === 'new-request'} onClick={handleSendRequest}>
-                SEND REQUEST
+                {t.friends.sendRequest}
               </Button>
             </div>
           </section>
 
           <section className="friends-section">
-            <h2 className="friends-section__title mono">YOUR FRIENDS</h2>
-            {accepted.length === 0 && <p className="caption">No friends yet — send a request above.</p>}
+            <h2 className="friends-section__title mono">{t.friends.yourFriendsHeader}</h2>
+            {accepted.length === 0 && <p className="caption">{t.friends.noFriends}</p>}
             {accepted.map((f) => (
               <div className="friends-row" key={f.documentId}>
                 <Link to={`/students/${otherStudent(f)?.documentId}`}>{otherStudent(f)?.name}</Link>
@@ -130,7 +132,7 @@ export function Friends() {
                     disabled={pendingId === f.documentId}
                     onClick={() => runAction(f.documentId, () => removeFriendship(f.documentId))}
                   >
-                    REMOVE
+                    {t.friends.remove}
                   </Button>
                 </div>
               </div>
@@ -139,7 +141,7 @@ export function Friends() {
 
           {incoming.length > 0 && (
             <section className="friends-section">
-              <h2 className="friends-section__title mono">REQUESTS</h2>
+              <h2 className="friends-section__title mono">{t.friends.requestsHeader}</h2>
               {incoming.map((f) => (
                 <div className="friends-row" key={f.documentId}>
                   <Link to={`/students/${otherStudent(f)?.documentId}`}>{otherStudent(f)?.name}</Link>
@@ -148,14 +150,14 @@ export function Friends() {
                       disabled={pendingId === f.documentId}
                       onClick={() => runAction(f.documentId, () => acceptFriendRequest(f.documentId))}
                     >
-                      ACCEPT
+                      {t.friends.accept}
                     </Button>
                     <Button
                       variant="outline"
                       disabled={pendingId === f.documentId}
                       onClick={() => runAction(f.documentId, () => removeFriendship(f.documentId))}
                     >
-                      DECLINE
+                      {t.friends.decline}
                     </Button>
                   </div>
                 </div>
@@ -165,18 +167,18 @@ export function Friends() {
 
           {outgoing.length > 0 && (
             <section className="friends-section">
-              <h2 className="friends-section__title mono">SENT</h2>
+              <h2 className="friends-section__title mono">{t.friends.sentHeader}</h2>
               {outgoing.map((f) => (
                 <div className="friends-row" key={f.documentId}>
                   <Link to={`/students/${otherStudent(f)?.documentId}`}>{otherStudent(f)?.name}</Link>
                   <div className="friends-row__actions">
-                    <span className="caption">PENDING</span>
+                    <span className="caption">{t.friends.pending}</span>
                     <Button
                       variant="outline"
                       disabled={pendingId === f.documentId}
                       onClick={() => runAction(f.documentId, () => removeFriendship(f.documentId))}
                     >
-                      CANCEL
+                      {t.friends.cancel}
                     </Button>
                   </div>
                 </div>

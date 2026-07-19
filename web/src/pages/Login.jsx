@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Button } from '../components/Button';
 import './Login.css';
 
@@ -8,13 +9,13 @@ const SEED_PASSWORD = 'Password123!';
 
 // Seeded test accounts from scripts/seed.js — only ever rendered in dev builds
 // (see `import.meta.env.DEV` below), so this never ships to a real deployment.
-const QUICK_LOGIN_GROUPS = [
+const QUICK_LOGIN_ACCOUNTS = [
   {
-    label: 'Coordinator',
+    labelKey: 'groupCoordinator',
     accounts: [{ name: 'Alice Nguyen', email: 'alice.coordinator@srh.edu' }],
   },
   {
-    label: 'Group Managers',
+    labelKey: 'groupManagers',
     accounts: [
       { name: 'Ben Fischer', email: 'ben.fischer@stud.srh.edu' },
       { name: 'Carla Weber', email: 'carla.weber@stud.srh.edu' },
@@ -22,7 +23,7 @@ const QUICK_LOGIN_GROUPS = [
     ],
   },
   {
-    label: 'Students',
+    labelKey: 'groupStudents',
     accounts: [
       { name: 'Elena Rossi', email: 'elena.rossi@stud.srh.edu' },
       { name: 'Finn Becker', email: 'finn.becker@stud.srh.edu' },
@@ -34,6 +35,7 @@ const QUICK_LOGIN_GROUPS = [
 
 export function Login() {
   const { login } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [identifier, setIdentifier] = useState('');
@@ -70,10 +72,10 @@ export function Login() {
   return (
     <div className="login">
       <div className="login__panel">
-        <h1 className="login__title">Sign in</h1>
+        <h1 className="login__title">{t.login.title}</h1>
         <form className="login__form" onSubmit={handleSubmit}>
           <label className="login__label caption" htmlFor="identifier">
-            EMAIL
+            {t.login.email}
           </label>
           <input
             id="identifier"
@@ -86,7 +88,7 @@ export function Login() {
           />
 
           <label className="login__label caption" htmlFor="password">
-            PASSWORD
+            {t.login.password}
           </label>
           <input
             id="password"
@@ -101,20 +103,20 @@ export function Login() {
           {error && <div className="login__error caption">{error}</div>}
 
           <Button type="submit" disabled={submitting}>
-            {submitting ? 'SIGNING IN…' : 'SIGN IN'}
+            {submitting ? t.login.signingIn : t.login.signIn}
           </Button>
         </form>
       </div>
 
       {import.meta.env.DEV && (
         <div className="login__panel login__quick-panel">
-          <h2 className="login__quick-title mono">QUICK LOGIN (DEV)</h2>
+          <h2 className="login__quick-title mono">{t.login.quickLoginTitle}</h2>
           <p className="caption" style={{ marginTop: '0.35rem' }}>
-            Seeded test accounts — one click signs in and swaps role.
+            {t.login.quickLoginDescription}
           </p>
-          {QUICK_LOGIN_GROUPS.map((group) => (
-            <div key={group.label} className="login__quick-group">
-              <div className="caption login__quick-group-label">{group.label.toUpperCase()}</div>
+          {QUICK_LOGIN_ACCOUNTS.map((group) => (
+            <div key={group.labelKey} className="login__quick-group">
+              <div className="caption login__quick-group-label">{t.login[group.labelKey].toUpperCase()}</div>
               {group.accounts.map((account) => (
                 <button
                   key={account.email}

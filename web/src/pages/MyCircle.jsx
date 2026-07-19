@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { listEvents } from '../api/events';
 import { listPosts } from '../api/posts';
 import { listFriendships } from '../api/friendships';
@@ -18,6 +19,7 @@ function formatEventTime(iso) {
 
 export function MyCircle() {
   const { student } = useAuth();
+  const { t } = useLanguage();
   const [entries, setEntries] = useState([]);
   const [events, setEvents] = useState([]);
   const [friendships, setFriendships] = useState([]);
@@ -35,13 +37,13 @@ export function MyCircle() {
         setEvents(fetchedEvents);
         setFriendships(fetchedFriendships);
         setEntries(
-          buildLedgerEntries({ student, myGroupIds, events: fetchedEvents, posts, friendships: fetchedFriendships })
+          buildLedgerEntries({ student, myGroupIds, events: fetchedEvents, posts, friendships: fetchedFriendships, t })
         );
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [student]);
+  }, [student, t]);
 
   const myGroups = student?.groups || [];
 
@@ -67,38 +69,38 @@ export function MyCircle() {
   return (
     <div className="my-circle">
       <header className="my-circle__header">
-        <h1>My Circle</h1>
+        <h1>{t.myCircle.title}</h1>
       </header>
 
       {!loading && !error && (
         <section className="my-circle__stats">
           <div className="stat-card">
             <div className="stat-card__value mono">{myGroups.length}</div>
-            <div className="stat-card__label caption">Groups followed</div>
+            <div className="stat-card__label caption">{t.myCircle.groupsFollowed}</div>
           </div>
           <div className="stat-card">
             <div className="stat-card__value mono">{acceptedFriendsCount}</div>
-            <div className="stat-card__label caption">Accepted friends</div>
+            <div className="stat-card__label caption">{t.myCircle.acceptedFriends}</div>
           </div>
           <div className="stat-card">
             <div className="stat-card__value mono">{upcomingEvents.length}</div>
-            <div className="stat-card__label caption">Upcoming events</div>
+            <div className="stat-card__label caption">{t.myCircle.upcomingEvents}</div>
           </div>
           <div className="stat-card">
             <div className="stat-card__value mono">{attendingEvents.length}</div>
-            <div className="stat-card__label caption">Events attending</div>
+            <div className="stat-card__label caption">{t.myCircle.eventsAttending}</div>
           </div>
         </section>
       )}
 
       <section className="my-circle__upcoming">
-        <h2 className="my-circle__section-title mono">UPCOMING EVENTS</h2>
+        <h2 className="my-circle__section-title mono">{t.myCircle.upcomingEventsHeader}</h2>
 
-        {loading && <p className="caption">Loading…</p>}
+        {loading && <p className="caption">{t.myCircle.loading}</p>}
         {error && <p className="caption my-circle__error">{error}</p>}
 
         {!loading && !error && upcomingEvents.length === 0 && (
-          <p className="caption">No upcoming events — explore new groups to discover more.</p>
+          <p className="caption">{t.myCircle.noUpcomingEvents}</p>
         )}
 
         {!loading && !error && upcomingEvents.length > 0 && (
@@ -123,10 +125,10 @@ export function MyCircle() {
       </section>
 
       <section className="my-circle__upcoming">
-        <h2 className="my-circle__section-title mono">EVENTS YOU'RE ATTENDING</h2>
+        <h2 className="my-circle__section-title mono">{t.myCircle.attendingHeader}</h2>
 
         {!loading && !error && attendingEvents.length === 0 && (
-          <p className="caption">You haven't RSVP'd to any upcoming events yet.</p>
+          <p className="caption">{t.myCircle.noAttending}</p>
         )}
 
         {!loading && !error && attendingEvents.length > 0 && (
@@ -151,13 +153,13 @@ export function MyCircle() {
       </section>
 
       <section className="my-circle__activity">
-        <h2 className="my-circle__section-title mono">ACTIVITY</h2>
+        <h2 className="my-circle__section-title mono">{t.myCircle.activityHeader}</h2>
 
-        {loading && <p className="caption">Loading activity…</p>}
+        {loading && <p className="caption">{t.myCircle.loadingActivity}</p>}
         {error && <p className="caption my-circle__error">{error}</p>}
 
         {!loading && !error && entries.length === 0 && (
-          <p className="caption">No activity yet in your groups. Join one from Discover to see it here.</p>
+          <p className="caption">{t.myCircle.noActivity}</p>
         )}
 
         {!loading && !error && entries.length > 0 && (

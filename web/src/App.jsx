@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { AppLayout } from './components/AppLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { MyCircle } from './pages/MyCircle';
 import { Discover } from './pages/Discover';
@@ -17,56 +19,59 @@ import { StudentProfile } from './pages/StudentProfile';
 export default function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Login lives inside AppLayout too, so the sidebar (and guest nav) is
-                always present — never a bare dead-end form. */}
-            <Route element={<AppLayout />}>
-              <Route path="/login" element={<Login />} />
-              <Route
-                path="/my-circle"
-                element={
-                  <ProtectedRoute>
-                    <MyCircle />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Public per the backend's Public role: read-only Groups/Events/Posts, no login required. */}
-              <Route path="/discover" element={<Discover />} />
-              <Route path="/groups" element={<Groups />} />
-              <Route path="/groups/:documentId" element={<GroupDetail />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/events/:documentId" element={<EventDetail />} />
-              <Route
-                path="/friends"
-                element={
-                  <ProtectedRoute>
-                    <Friends />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/students/:documentId"
-                element={
-                  <ProtectedRoute>
-                    <StudentProfile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/review"
-                element={
-                  <ProtectedRoute>
-                    <Review />
-                  </ProtectedRoute>
-                }
-              />
-            </Route>
-            <Route path="*" element={<Navigate to="/discover" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Login lives inside AppLayout too, so the sidebar (and guest nav) is
+                  always present — never a bare dead-end form. */}
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route
+                  path="/my-circle"
+                  element={
+                    <ProtectedRoute>
+                      <MyCircle />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Public per the backend's Public role: read-only Groups/Events/Posts, no login required. */}
+                <Route path="/discover" element={<Discover />} />
+                <Route path="/groups" element={<Groups />} />
+                <Route path="/groups/:documentId" element={<GroupDetail />} />
+                <Route path="/events" element={<Events />} />
+                <Route path="/events/:documentId" element={<EventDetail />} />
+                <Route
+                  path="/friends"
+                  element={
+                    <ProtectedRoute>
+                      <Friends />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/students/:documentId"
+                  element={
+                    <ProtectedRoute>
+                      <StudentProfile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/review"
+                  element={
+                    <ProtectedRoute>
+                      <Review />
+                    </ProtectedRoute>
+                  }
+                />
+              </Route>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { API_URL } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { getEvent, attendEvent, unattendEvent } from '../api/events';
 import { Button } from '../components/Button';
 import { StatusTag } from '../components/StatusTag';
@@ -21,6 +22,7 @@ function formatTime(iso) {
 export function EventDetail() {
   const { documentId } = useParams();
   const { isAuthenticated, student } = useAuth();
+  const { t } = useLanguage();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,16 +46,16 @@ export function EventDetail() {
   }, [documentId]);
 
   if (loading) {
-    return <p className="caption">Loading…</p>;
+    return <p className="caption">{t.eventDetail.loading}</p>;
   }
 
   if (error || !event) {
     return (
       <div>
-        <h1>Event not found</h1>
+        <h1>{t.eventDetail.notFound}</h1>
         {error && <p className="caption" style={{ color: 'var(--status-rejected)' }}>{error}</p>}
         <p className="caption" style={{ marginTop: '0.5rem' }}>
-          <Link to="/events">Back to Events</Link>
+          <Link to="/events">{t.eventDetail.backToEvents}</Link>
         </p>
       </div>
     );
@@ -82,7 +84,7 @@ export function EventDetail() {
   return (
     <div>
       <p className="caption">
-        <Link to="/events">← Back to Events</Link>
+        <Link to="/events">{t.eventDetail.backToEvents}</Link>
       </p>
 
       <div className="group-detail__cover event-detail__poster">
@@ -107,18 +109,18 @@ export function EventDetail() {
           </div>
           {event.submittedBy && (
             <div className="caption" style={{ marginTop: '0.25rem' }}>
-              Hosted by <Link to={`/students/${event.submittedBy.documentId}`}>{event.submittedBy.name}</Link>
+              {t.eventDetail.hostedBy} <Link to={`/students/${event.submittedBy.documentId}`}>{event.submittedBy.name}</Link>
             </div>
           )}
         </div>
         <div className="group-detail__header-actions">
           {isAuthenticated ? (
             <Button variant={isAttending ? 'outline' : 'primary'} disabled={rsvpPending} onClick={handleToggleRsvp}>
-              {isAttending ? 'CANCEL RSVP' : "I'M ATTENDING"}
+              {isAttending ? t.eventDetail.cancelRsvp : t.eventDetail.imAttending}
             </Button>
           ) : (
             <Link to="/login" className="caption">
-              Sign in to RSVP
+              {t.eventDetail.signInToRsvp}
             </Link>
           )}
         </div>
@@ -130,9 +132,9 @@ export function EventDetail() {
 
       <section style={{ marginTop: '3rem' }}>
         <h2 className="mono" style={{ fontSize: '0.8125rem', color: 'var(--ash-fg)', letterSpacing: '0.06em' }}>
-          {attendees.length} {attendees.length === 1 ? 'PERSON' : 'PEOPLE'} INTERESTED
+          {t.eventDetail.interestedHeader(attendees.length)}
         </h2>
-        {attendees.length === 0 && <p className="caption" style={{ marginTop: '0.5rem' }}>No one has RSVP'd yet.</p>}
+        {attendees.length === 0 && <p className="caption" style={{ marginTop: '0.5rem' }}>{t.eventDetail.noRsvps}</p>}
         {attendees.length > 0 && (
           <div className="event-detail__attendees">
             {attendees.map((attendee) => (

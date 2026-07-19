@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { API_URL } from '../api/client';
+import { useLanguage } from '../context/LanguageContext';
 import { listEvents } from '../api/events';
 import { StatusTag } from '../components/StatusTag';
 import '../components/Card.css';
@@ -18,6 +19,7 @@ function formatDate(iso) {
 const EMPTY_FILTERS = { group: '', host: '', category: '' };
 
 export function Events() {
+  const { t } = useLanguage();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -66,23 +68,22 @@ export function Events() {
 
   return (
     <div>
-      <h1>Events</h1>
+      <h1>{t.events.title}</h1>
       <p className="caption" style={{ marginTop: '0.5rem' }}>
-        Approved events across every group. Signed-in Group Managers and Coordinators also see
-        pending submissions for groups they manage.
+        {t.events.subtitle}
       </p>
 
       {!loading && !error && events.length > 0 && (
         <div className="events-filter-bar">
           <select value={filters.group} onChange={(e) => updateFilter('group', e.target.value)}>
-            <option value="">All groups</option>
+            <option value="">{t.events.allGroups}</option>
             {groupOptions.map(([id, name]) => (
               <option key={id} value={id}>{name}</option>
             ))}
           </select>
 
           <select value={filters.host} onChange={(e) => updateFilter('host', e.target.value)}>
-            <option value="">All hosts</option>
+            <option value="">{t.events.allHosts}</option>
             {hostOptions.map(([id, name]) => (
               <option key={id} value={id}>{name}</option>
             ))}
@@ -90,7 +91,7 @@ export function Events() {
 
           {categoryOptions.length > 0 && (
             <select value={filters.category} onChange={(e) => updateFilter('category', e.target.value)}>
-              <option value="">All categories</option>
+              <option value="">{t.events.allCategories}</option>
               {categoryOptions.map((category) => (
                 <option key={category} value={category}>{category}</option>
               ))}
@@ -98,25 +99,25 @@ export function Events() {
           )}
 
           <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-            <option value="asc">Soonest first</option>
-            <option value="desc">Latest first</option>
+            <option value="asc">{t.events.soonestFirst}</option>
+            <option value="desc">{t.events.latestFirst}</option>
           </select>
 
           {hasActiveFilters && (
             <button type="button" className="link-button caption" onClick={() => setFilters(EMPTY_FILTERS)}>
-              CLEAR FILTERS
+              {t.events.clearFilters}
             </button>
           )}
         </div>
       )}
 
-      {loading && <p className="caption">Loading events…</p>}
+      {loading && <p className="caption">{t.events.loading}</p>}
       {error && <p className="caption" style={{ color: 'var(--status-rejected)' }}>{error}</p>}
 
-      {!loading && !error && events.length === 0 && <p className="caption">No events yet.</p>}
+      {!loading && !error && events.length === 0 && <p className="caption">{t.events.none}</p>}
 
       {!loading && !error && events.length > 0 && filteredEvents.length === 0 && (
-        <p className="caption" style={{ marginTop: '1.5rem' }}>No events match these filters.</p>
+        <p className="caption" style={{ marginTop: '1.5rem' }}>{t.events.noneMatch}</p>
       )}
 
       {!loading && !error && filteredEvents.length > 0 && (
@@ -142,11 +143,9 @@ export function Events() {
                   {formatDate(event.date)}
                   {event.location ? ` · ${event.location}` : ''}
                 </div>
-                {event.submittedBy && <div className="caption">Hosted by {event.submittedBy.name}</div>}
+                {event.submittedBy && <div className="caption">{t.events.hostedBy} {event.submittedBy.name}</div>}
                 {typeof attendeeCount === 'number' && (
-                  <div className="caption">
-                    {attendeeCount} {attendeeCount === 1 ? 'person' : 'people'} interested
-                  </div>
+                  <div className="caption">{t.events.interested(attendeeCount)}</div>
                 )}
               </Link>
             );

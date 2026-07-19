@@ -1,21 +1,25 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import { API_URL } from '../api/client';
 import './Sidebar.css';
-
-const NAV_ITEMS = [
-  { to: '/my-circle', label: 'My Circle' },
-  { to: '/discover', label: 'Discover' },
-  { to: '/groups', label: 'Groups' },
-  { to: '/events', label: 'Events' },
-  { to: '/friends', label: 'Friends' },
-];
 
 export function Sidebar() {
   const { student, isAuthenticated, roleType, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { language, toggleLanguage, t } = useLanguage();
+
   const navigate = useNavigate();
-  const navItems = roleType === 'coordinator' ? [...NAV_ITEMS, { to: '/review', label: 'Review' }] : NAV_ITEMS;
+
+  const NAV_ITEMS = [
+    { to: '/my-circle', label: t.nav.myCircle },
+    { to: '/discover', label: t.nav.discover },
+    { to: '/groups', label: t.nav.groups },
+    { to: '/events', label: t.nav.events },
+    { to: '/friends', label: t.nav.friends },
+  ];
+  const navItems = roleType === 'coordinator' ? [...NAV_ITEMS, { to: '/review', label: t.nav.review }] : NAV_ITEMS;
 
   function handleLogout() {
     logout();
@@ -27,8 +31,8 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar__brand mono">SRH AMBASSADOR HUB</div>
+    <header className="sidebar">
+      <div className="sidebar__brand mono">{t.brand.toUpperCase()}</div>
 
       <nav className="sidebar__nav">
         {navItems.map((item) => (
@@ -45,36 +49,56 @@ export function Sidebar() {
       <div className="sidebar__footer">
         {isAuthenticated ? (
           <div className="sidebar__user">
-            {student ? (
-              <Link to={`/students/${student.documentId}`} className="sidebar__user-name sidebar__user-name--link">
-                {student.name}
-              </Link>
-            ) : (
-              <div className="sidebar__user-name">Signed in</div>
-            )}
-            <div className="sidebar__user-role caption">{roleType.replace('_', ' ')}</div>
+            <div className="sidebar__user-text">
+              {student ? (
+                <Link to={`/students/${student.documentId}`} className="sidebar__user-name sidebar__user-name--link">
+                  {student.name}
+                </Link>
+              ) : (
+                <span className="sidebar__user-name">{t.signedIn}</span>
+              )}
+              <span className="sidebar__user-role caption">{t.roles[roleType] || roleType.replace('_', ' ')}</span>
+            </div>
+            <div className="sidebar__avatar">
+              {student?.profilePicture?.url ? (
+                <img src={`${API_URL}${student.profilePicture.url}`} alt="" />
+              ) : (
+                <div className="sidebar__avatar-placeholder" />
+              )}
+            </div>
           </div>
         ) : (
           <div className="sidebar__user">
-            <div className="sidebar__user-name">Guest</div>
-            <div className="sidebar__user-role caption">browsing publicly</div>
+            <div className="sidebar__user-text">
+              <span className="sidebar__user-name">{t.guest}</span>
+              <span className="sidebar__user-role caption">{t.browsingPublicly}</span>
+            </div>
+            <div className="sidebar__avatar">
+              <div className="sidebar__avatar-placeholder" />
+            </div>
           </div>
         )}
 
-        <button type="button" className="sidebar__theme-toggle mono" onClick={toggleTheme}>
-          {theme === 'dark' ? 'LIGHT MODE' : 'DARK MODE'}
-        </button>
-
-        {isAuthenticated ? (
-          <button type="button" className="sidebar__logout mono" onClick={handleLogout}>
-            LOG OUT
+        <div className="sidebar__actions">
+          <button type="button" className="sidebar__theme-toggle mono" onClick={toggleLanguage}>
+            {language === 'en' ? 'DEUTSCH' : 'ENGLISH'}
           </button>
-        ) : (
-          <NavLink to="/login" className="sidebar__logout mono">
-            SIGN IN
-          </NavLink>
-        )}
+
+          <button type="button" className="sidebar__theme-toggle mono" onClick={toggleTheme}>
+            {theme === 'dark' ? t.lightMode : t.darkMode}
+          </button>
+
+          {isAuthenticated ? (
+            <button type="button" className="sidebar__logout mono" onClick={handleLogout}>
+              {t.logOut}
+            </button>
+          ) : (
+            <NavLink to="/login" className="sidebar__logout mono">
+              {t.signIn}
+            </NavLink>
+          )}
+        </div>
       </div>
-    </aside>
+    </header>
   );
 }

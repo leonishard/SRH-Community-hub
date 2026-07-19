@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { API_URL } from '../api/client';
+import { useLanguage } from '../context/LanguageContext';
 import { listComments, createComment, deleteComment } from '../api/comments';
 import { Button } from './Button';
 import '../components/Card.css';
@@ -16,7 +17,7 @@ function formatTimestamp(iso) {
   return date.toLocaleDateString(undefined, { month: 'short', day: '2-digit' });
 }
 
-function CommentRow({ comment, canDelete, onDeleted, setError }) {
+function CommentRow({ comment, canDelete, onDeleted, setError, t }) {
   const [deleting, setDeleting] = useState(false);
   const photoUrl = comment.author?.profilePicture?.url ? `${API_URL}${comment.author.profilePicture.url}` : null;
 
@@ -43,12 +44,12 @@ function CommentRow({ comment, canDelete, onDeleted, setError }) {
               {comment.author.name}
             </Link>
           ) : (
-            <span className="comment-row__author">Someone</span>
+            <span className="comment-row__author">{t.post.someone}</span>
           )}
           <span className="comment-row__time mono caption">{formatTimestamp(comment.createdAt)}</span>
           {canDelete && (
             <button type="button" className="link-button caption" disabled={deleting} onClick={handleDelete}>
-              {deleting ? 'REMOVING…' : 'DELETE'}
+              {deleting ? t.post.removing : t.post.delete}
             </button>
           )}
         </div>
@@ -59,6 +60,7 @@ function CommentRow({ comment, canDelete, onDeleted, setError }) {
 }
 
 export function PostThread({ post, isMember, canModerate, currentStudentDocumentId }) {
+  const { t } = useLanguage();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -126,6 +128,7 @@ export function PostThread({ post, isMember, canModerate, currentStudentDocument
               canDelete={canModerate || (Boolean(currentStudentDocumentId) && comment.author?.documentId === currentStudentDocumentId)}
               onDeleted={handleDeleted}
               setError={setError}
+              t={t}
             />
           ))}
         </div>
@@ -137,15 +140,15 @@ export function PostThread({ post, isMember, canModerate, currentStudentDocument
             type="text"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Write a comment…"
+            placeholder={t.post.writeComment}
             disabled={submitting}
           />
           <Button type="submit" variant="outline" disabled={submitting || !newComment.trim()}>
-            {submitting ? '…' : 'POST'}
+            {submitting ? '…' : t.post.post}
           </Button>
         </form>
       ) : (
-        <p className="caption post__join-prompt">Join this group to comment.</p>
+        <p className="caption post__join-prompt">{t.post.joinToComment}</p>
       )}
     </div>
   );

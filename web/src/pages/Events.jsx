@@ -17,6 +17,7 @@ export function Events() {
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [sortOrder, setSortOrder] = useState('asc');
+  const [timeScope, setTimeScope] = useState('all');
 
   useEffect(() => {
     listEvents()
@@ -48,6 +49,7 @@ export function Events() {
       if (filters.group && event.group?.documentId !== filters.group) return false;
       if (filters.host && event.submittedBy?.documentId !== filters.host) return false;
       if (filters.category && event.category !== filters.category) return false;
+      if (timeScope === 'upcoming' && new Date(event.date) < new Date()) return false;
       return true;
     })
     .sort((a, b) => (sortOrder === 'asc' ? 1 : -1) * (new Date(a.date) - new Date(b.date)));
@@ -89,6 +91,11 @@ export function Events() {
               ))}
             </select>
           )}
+
+          <select value={timeScope} onChange={(e) => setTimeScope(e.target.value)}>
+            <option value="all">{t.events.allTime}</option>
+            <option value="upcoming">{t.events.upcomingOnly}</option>
+          </select>
 
           <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
             <option value="asc">{t.events.soonestFirst}</option>

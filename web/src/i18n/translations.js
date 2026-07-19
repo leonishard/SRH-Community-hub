@@ -58,6 +58,9 @@ export const translations = {
       activityHeader: 'ACTIVITY',
       loadingActivity: 'Loading activity…',
       noActivity: 'No activity yet in your groups. Join one from Discover to see it here.',
+      recentPostsHeader: 'RECENT POSTS',
+      noRecentPosts: 'No posts yet from your groups — join more from Discover to see them here.',
+      postedBy: 'Posted by',
     },
 
     discover: {
@@ -106,6 +109,8 @@ export const translations = {
       allGroups: 'All groups',
       allHosts: 'All hosts',
       allCategories: 'All categories',
+      allTime: 'All events',
+      upcomingOnly: 'Upcoming only',
       soonestFirst: 'Soonest first',
       latestFirst: 'Latest first',
       clearFilters: 'CLEAR FILTERS',
@@ -339,6 +344,8 @@ export const translations = {
       activityHeader: 'AKTIVITÄT',
       loadingActivity: 'Aktivität wird geladen…',
       noActivity: 'Noch keine Aktivität in deinen Gruppen. Tritt einer Gruppe unter „Entdecken" bei.',
+      recentPostsHeader: 'NEUE BEITRÄGE',
+      noRecentPosts: 'Noch keine Beiträge aus deinen Gruppen — tritt unter „Entdecken" weiteren bei.',
     },
 
     discover: {
@@ -387,6 +394,8 @@ export const translations = {
       allGroups: 'Alle Gruppen',
       allHosts: 'Alle Gastgeber',
       allCategories: 'Alle Kategorien',
+      allTime: 'Alle Veranstaltungen',
+      upcomingOnly: 'Nur bevorstehende',
       soonestFirst: 'Zuerst die nächsten',
       latestFirst: 'Zuerst die spätesten',
       clearFilters: 'FILTER ZURÜCKSETZEN',

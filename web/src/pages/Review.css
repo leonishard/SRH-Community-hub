@@ -13,7 +13,14 @@
 }
 
 .review-manager-row__name {
+  display: inline-block;
   font-weight: 500;
+  color: inherit;
+  text-decoration: none;
+}
+
+.review-manager-row__name:hover {
+  color: var(--signal);
 }
 
 .review-manager-row__actions {

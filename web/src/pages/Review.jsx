@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { API_URL } from '../api/client';
 import { listEvents, reviewEvent } from '../api/events';
 import { listGroupProposals, reviewGroupProposal } from '../api/groupProposals';
 import { listGroups, updateGroup, deleteGroup } from '../api/groups';
 import { listStudents } from '../api/students';
 import { Button } from '../components/Button';
 import { Toast } from '../components/Toast';
+import { EventDateBadge } from '../components/EventDateBadge';
 import '../components/Card.css';
 import './Review.css';
 
@@ -49,7 +51,7 @@ function GroupManagerRow({ group, students, onChanged, showToast, setError, t })
   return (
     <div className="review-manager-row">
       <div>
-        <div className="review-manager-row__name">{group.name}</div>
+        <Link to={`/groups/${group.documentId}`} className="review-manager-row__name">{group.name}</Link>
         <div className="caption">{group.category}</div>
       </div>
       <div className="review-manager-row__actions">
@@ -179,64 +181,88 @@ export function Review() {
           <h2 style={{ marginTop: '2rem' }}>{t.review.groupProposalsHeader}</h2>
           {proposals.length === 0 && <p className="caption">{t.review.nothingPending}</p>}
           <div className="card-grid">
-            {proposals.map((proposal) => (
-              <div className="card" key={proposal.documentId}>
-                <div className="card__title">{proposal.name}</div>
-                <div className="card__description">{proposal.description}</div>
-                {proposal.submittedBy && (
-                  <div className="caption">
-                    {t.review.submittedBy} <Link to={`/students/${proposal.submittedBy.documentId}`}>{proposal.submittedBy.name}</Link>
+            {proposals.map((proposal) => {
+              const bannerUrl = proposal.coverImage?.url
+                ? `${API_URL}${proposal.coverImage.url}`
+                : proposal.profilePicture?.url
+                  ? `${API_URL}${proposal.profilePicture.url}`
+                  : null;
+              return (
+                <div className="card" key={proposal.documentId}>
+                  {bannerUrl ? (
+                    <img className="card__poster" src={bannerUrl} alt="" />
+                  ) : (
+                    <div className="card__poster card__poster--placeholder" />
+                  )}
+                  <div className="card__title">{proposal.name}</div>
+                  {proposal.category && <div className="card__meta caption">{proposal.category}</div>}
+                  <div className="card__description">{proposal.description}</div>
+                  {proposal.submittedBy && (
+                    <div className="caption">
+                      {t.review.submittedBy} <Link to={`/students/${proposal.submittedBy.documentId}`}>{proposal.submittedBy.name}</Link>
+                    </div>
+                  )}
+                  <div className="card__footer">
+                    <Button
+                      disabled={pendingId === proposal.documentId}
+                      onClick={() => handleProposalDecision(proposal, 'approved')}
+                    >
+                      {t.review.approve}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      disabled={pendingId === proposal.documentId}
+                      onClick={() => handleProposalDecision(proposal, 'rejected')}
+                    >
+                      {t.review.reject}
+                    </Button>
                   </div>
-                )}
-                <div className="card__footer">
-                  <Button
-                    disabled={pendingId === proposal.documentId}
-                    onClick={() => handleProposalDecision(proposal, 'approved')}
-                  >
-                    {t.review.approve}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    disabled={pendingId === proposal.documentId}
-                    onClick={() => handleProposalDecision(proposal, 'rejected')}
-                  >
-                    {t.review.reject}
-                  </Button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <h2 style={{ marginTop: '2rem' }}>{t.review.eventsHeader}</h2>
           {events.length === 0 && <p className="caption">{t.review.nothingPending}</p>}
           <div className="card-grid">
-            {events.map((event) => (
-              <div className="card" key={event.documentId}>
-                <div className="card__title">{event.title}</div>
-                <div className="card__meta caption">{event.group?.name}</div>
-                <div className="card__description">{event.description}</div>
-                {event.submittedBy && (
-                  <div className="caption">
-                    {t.review.submittedBy} <Link to={`/students/${event.submittedBy.documentId}`}>{event.submittedBy.name}</Link>
+            {events.map((event) => {
+              const posterUrl = event.poster?.url ? `${API_URL}${event.poster.url}` : null;
+              return (
+                <div className="card" key={event.documentId}>
+                  <Link to={`/events/${event.documentId}`} className="card__link">
+                    {posterUrl ? (
+                      <img className="card__poster" src={posterUrl} alt="" />
+                    ) : (
+                      <div className="card__poster card__poster--placeholder" />
+                    )}
+                    <EventDateBadge iso={event.date} />
+                    <div className="card__title">{event.title}</div>
+                    <div className="card__meta caption">{event.group?.name}</div>
+                    <div className="card__description">{event.description}</div>
+                  </Link>
+                  {event.submittedBy && (
+                    <div className="caption">
+                      {t.review.submittedBy} <Link to={`/students/${event.submittedBy.documentId}`}>{event.submittedBy.name}</Link>
+                    </div>
+                  )}
+                  <div className="card__footer">
+                    <Button
+                      disabled={pendingId === event.documentId}
+                      onClick={() => handleEventDecision(event, 'approved')}
+                    >
+                      {t.review.approve}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      disabled={pendingId === event.documentId}
+                      onClick={() => handleEventDecision(event, 'rejected')}
+                    >
+                      {t.review.reject}
+                    </Button>
                   </div>
-                )}
-                <div className="card__footer">
-                  <Button
-                    disabled={pendingId === event.documentId}
-                    onClick={() => handleEventDecision(event, 'approved')}
-                  >
-                    {t.review.approve}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    disabled={pendingId === event.documentId}
-                    onClick={() => handleEventDecision(event, 'rejected')}
-                  >
-                    {t.review.reject}
-                  </Button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <h2 style={{ marginTop: '2rem' }}>{t.review.manageGroupsHeader}</h2>

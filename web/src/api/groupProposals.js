@@ -4,7 +4,7 @@ export async function listGroupProposals(params = {}) {
   const res = await api.get('/group-proposals', {
     'pagination[pageSize]': 100,
     'sort[0]': 'createdAt:desc',
-    populate: 'submittedBy,approvedBy',
+    populate: 'submittedBy,approvedBy,coverImage,profilePicture',
     ...params,
   });
   return res.data;

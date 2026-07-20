@@ -187,6 +187,7 @@ export const translations = {
       bio: 'BIO',
       showGroups: 'SHOW MY GROUPS ON PROFILE',
       showFriends: 'SHOW MY FRIENDS ON PROFILE',
+      showContributions: 'SHOW MY CONTRIBUTIONS ON PROFILE',
       save: 'SAVE',
       saving: 'SAVING…',
       groupsHeader: 'Groups',
@@ -194,6 +195,10 @@ export const translations = {
       manager: 'MANAGER',
       friendsHeader: 'Friends',
       noFriends: 'No friends yet.',
+      contributionsHeader: 'Contributions',
+      postsCount: 'Posts',
+      commentsCount: 'Comments',
+      eventsHostedCount: 'Events hosted',
     },
 
     groupDetail: {
@@ -475,6 +480,7 @@ export const translations = {
       bio: 'BIO',
       showGroups: 'MEINE GRUPPEN IM PROFIL ANZEIGEN',
       showFriends: 'MEINE FREUNDE IM PROFIL ANZEIGEN',
+      showContributions: 'MEINE BEITRÄGE IM PROFIL ANZEIGEN',
       save: 'SPEICHERN',
       saving: 'WIRD GESPEICHERT…',
       groupsHeader: 'Gruppen',
@@ -482,6 +488,10 @@ export const translations = {
       manager: 'LEITER',
       friendsHeader: 'Freunde',
       noFriends: 'Noch keine Freunde.',
+      contributionsHeader: 'Beiträge',
+      postsCount: 'Beiträge',
+      commentsCount: 'Kommentare',
+      eventsHostedCount: 'Veranstaltungen organisiert',
     },
 
     groupDetail: {

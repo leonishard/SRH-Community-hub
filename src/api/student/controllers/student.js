@@ -8,6 +8,14 @@ const {
   getAcceptedFriends,
 } = require('../../../utils/students');
 
+function buildContributions(student) {
+  return {
+    posts: student.posts?.length || 0,
+    comments: student.comments?.length || 0,
+    eventsHosted: student.submittedEvents?.length || 0,
+  };
+}
+
 module.exports = createCoreController('api::student.student', ({ strapi }) => ({
   /** Resolves the Student profile linked to the calling account, without exposing the `user` relation to clients. */
   async me(ctx) {
@@ -29,18 +37,18 @@ module.exports = createCoreController('api::student.student', ({ strapi }) => ({
 
   /**
    * Profile view. name/profilePicture/bio/program are always visible; the
-   * Groups (membership + managed) and Friends sections are each gated on
-   * TWO independent conditions: the viewer must be the owner or an accepted
-   * friend, AND the owner's corresponding toggle must be on. Coordinators
-   * don't get a bypass here — this is a privacy setting, not an access
-   * control the admin role overrides. Sections the viewer can't see are
-   * omitted entirely rather than shown as a locked placeholder.
+   * Groups (membership + managed), Friends, and Contributions sections are
+   * each gated on TWO independent conditions: the viewer must be the owner
+   * or an accepted friend, AND the owner's corresponding toggle must be on.
+   * Coordinators don't get a bypass here — this is a privacy setting, not an
+   * access control the admin role overrides. Sections the viewer can't see
+   * are omitted entirely rather than shown as a locked placeholder.
    */
   async findOne(ctx) {
     const { id: documentId } = ctx.params;
     const target = await strapi.documents('api::student.student').findOne({
       documentId,
-      populate: ['profilePicture', 'groups', 'managedGroups'],
+      populate: ['profilePicture', 'groups', 'managedGroups', 'posts', 'comments', 'submittedEvents'],
     });
     if (!target) {
       return ctx.notFound();
@@ -65,13 +73,16 @@ module.exports = createCoreController('api::student.student', ({ strapi }) => ({
     // defaults only apply to new rows. Treat anything but an explicit `false` as on.
     const showGroups = target.showGroupsOnProfile !== false;
     const showFriends = target.showFriendsOnProfile !== false;
+    const showContributions = target.showContributionsOnProfile !== false;
 
     if (isOwner) {
       payload.showGroupsOnProfile = showGroups;
       payload.showFriendsOnProfile = showFriends;
+      payload.showContributionsOnProfile = showContributions;
       payload.groups = target.groups;
       payload.managedGroups = target.managedGroups;
       payload.friends = await getAcceptedFriends(strapi, target);
+      payload.contributions = buildContributions(target);
     } else {
       if (canSeeGated && showGroups) {
         payload.groups = target.groups;
@@ -79,6 +90,9 @@ module.exports = createCoreController('api::student.student', ({ strapi }) => ({
       }
       if (canSeeGated && showFriends) {
         payload.friends = await getAcceptedFriends(strapi, target);
+      }
+      if (canSeeGated && showContributions) {
+        payload.contributions = buildContributions(target);
       }
     }
 

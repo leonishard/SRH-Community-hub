@@ -72,3 +72,36 @@
   margin-top: 1.25rem;
   align-self: flex-start;
 }
+
+.student-profile__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 480px;
+}
+
+@media (max-width: 480px) {
+  .student-profile__stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.student-profile__stat {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 1rem;
+}
+
+.student-profile__stat-value {
+  font-family: var(--font-mono);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.student-profile__stat-label {
+  text-transform: uppercase;
+  margin-top: 0.35rem;
+  display: block;
+}

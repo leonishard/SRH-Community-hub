@@ -41,6 +41,10 @@
       "type": "boolean",
       "default": true
     },
+    "showContributionsOnProfile": {
+      "type": "boolean",
+      "default": true
+    },
     "user": {
       "type": "relation",
       "relation": "oneToOne",

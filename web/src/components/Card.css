@@ -95,3 +95,10 @@
   justify-content: space-between;
   gap: 0.5rem;
 }
+
+/* Pinned to the bottom of the card so it lands in the same spot regardless
+   of how much description/meta text precedes it in a given card. */
+.card__interested {
+  margin-top: auto;
+  padding-top: 0.5rem;
+}

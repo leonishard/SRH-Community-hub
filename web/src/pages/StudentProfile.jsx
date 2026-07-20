@@ -21,6 +21,7 @@ export function StudentProfile() {
   const [bioDraft, setBioDraft] = useState('');
   const [showGroupsDraft, setShowGroupsDraft] = useState(true);
   const [showFriendsDraft, setShowFriendsDraft] = useState(true);
+  const [showContributionsDraft, setShowContributionsDraft] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
@@ -32,6 +33,7 @@ export function StudentProfile() {
       setBioDraft(data.bio || '');
       setShowGroupsDraft(data.showGroupsOnProfile ?? true);
       setShowFriendsDraft(data.showFriendsOnProfile ?? true);
+      setShowContributionsDraft(data.showContributionsOnProfile ?? true);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -83,6 +85,7 @@ export function StudentProfile() {
         bio: bioDraft,
         showGroupsOnProfile: showGroupsDraft,
         showFriendsOnProfile: showFriendsDraft,
+        showContributionsOnProfile: showContributionsDraft,
       });
       setEditing(false);
       await load();
@@ -104,6 +107,7 @@ export function StudentProfile() {
   const groupsList = [...groupMap.values()];
   const groupsVisible = profile.groups !== undefined || profile.managedGroups !== undefined;
   const friendsVisible = profile.friends !== undefined;
+  const contributionsVisible = profile.contributions !== undefined;
 
   return (
     <div>
@@ -159,12 +163,41 @@ export function StudentProfile() {
             {t.studentProfile.showFriends}
           </label>
 
+          <label className="student-profile__checkbox caption">
+            <input
+              type="checkbox"
+              checked={showContributionsDraft}
+              onChange={(e) => setShowContributionsDraft(e.target.checked)}
+            />
+            {t.studentProfile.showContributions}
+          </label>
+
           <Button disabled={saving} onClick={handleSave}>
             {saving ? t.studentProfile.saving : t.studentProfile.save}
           </Button>
         </section>
       ) : (
         <p style={{ marginTop: '1.5rem' }}>{profile.bio}</p>
+      )}
+
+      {contributionsVisible && (
+        <section style={{ marginTop: '3rem' }}>
+          <h2>{t.studentProfile.contributionsHeader}</h2>
+          <div className="student-profile__stats" style={{ marginTop: '1rem' }}>
+            <div className="student-profile__stat">
+              <div className="student-profile__stat-value mono">{profile.contributions.posts}</div>
+              <span className="student-profile__stat-label caption">{t.studentProfile.postsCount}</span>
+            </div>
+            <div className="student-profile__stat">
+              <div className="student-profile__stat-value mono">{profile.contributions.comments}</div>
+              <span className="student-profile__stat-label caption">{t.studentProfile.commentsCount}</span>
+            </div>
+            <div className="student-profile__stat">
+              <div className="student-profile__stat-value mono">{profile.contributions.eventsHosted}</div>
+              <span className="student-profile__stat-label caption">{t.studentProfile.eventsHostedCount}</span>
+            </div>
+          </div>
+        </section>
       )}
 
       {groupsVisible && (

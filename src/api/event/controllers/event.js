@@ -47,6 +47,34 @@ async function isEventVisible(strapi, user, entity) {
   return false;
 }
 
+/**
+ * Who's attending is meant to be as public as the event itself, but Student
+ * isn't a publicly listable content type — the default populate+sanitize
+ * pipeline silently drops `attendees` for roles without `student.find`
+ * (Public, in practice). We re-resolve it ourselves and expose only a
+ * public-safe summary, same idea as Comment's toPublicAuthor().
+ */
+function toPublicAttendee(student) {
+  if (!student) {
+    return null;
+  }
+  return { documentId: student.documentId, name: student.name };
+}
+
+async function attachPublicAttendees(strapi, data) {
+  const entities = Array.isArray(data) ? data : [data];
+  await Promise.all(
+    entities.map(async (entity) => {
+      if (!entity?.documentId) return;
+      const withAttendees = await strapi.documents('api::event.event').findOne({
+        documentId: entity.documentId,
+        populate: ['attendees'],
+      });
+      entity.attendees = (withAttendees?.attendees || []).map(toPublicAttendee);
+    })
+  );
+}
+
 module.exports = createCoreController('api::event.event', ({ strapi }) => ({
   async find(ctx) {
     const scope = await buildEventVisibilityFilter(strapi, ctx.state.user);
@@ -56,7 +84,11 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
         filters: { $and: [ctx.query.filters || {}, scope] },
       };
     }
-    return super.find(ctx);
+    const response = await super.find(ctx);
+    if (Array.isArray(response?.data)) {
+      await attachPublicAttendees(strapi, response.data);
+    }
+    return response;
   },
 
   async findOne(ctx) {
@@ -75,7 +107,11 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
       return ctx.notFound();
     }
 
-    return super.findOne(ctx);
+    const response = await super.findOne(ctx);
+    if (response?.data) {
+      await attachPublicAttendees(strapi, response.data);
+    }
+    return response;
   },
 
   async create(ctx) {

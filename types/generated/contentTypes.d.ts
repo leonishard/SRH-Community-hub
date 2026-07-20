@@ -698,6 +698,8 @@ export interface ApiStudentStudent extends Struct.CollectionTypeSchema {
       'oneToMany',
       'api::friendship.friendship'
     >;
+    showContributionsOnProfile: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
     showFriendsOnProfile: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<true>;
     showGroupsOnProfile: Schema.Attribute.Boolean &

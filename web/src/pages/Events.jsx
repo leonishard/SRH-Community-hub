@@ -142,7 +142,7 @@ export function Events() {
                 {event.location && <div className="caption">{event.location}</div>}
                 {event.submittedBy && <div className="caption">{t.events.hostedBy} {event.submittedBy.name}</div>}
                 {typeof attendeeCount === 'number' && (
-                  <div className="caption">{t.events.interested(attendeeCount)}</div>
+                  <div className="caption card__interested">{t.events.interested(attendeeCount)}</div>
                 )}
               </Link>
             );

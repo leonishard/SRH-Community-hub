@@ -53,6 +53,8 @@ export function GroupDetail() {
   const [nameDraft, setNameDraft] = useState('');
   const [descriptionDraft, setDescriptionDraft] = useState('');
   const [categoryDraft, setCategoryDraft] = useState('');
+  const [memberLimitDraft, setMemberLimitDraft] = useState('');
+  const [responsibleEmailDraft, setResponsibleEmailDraft] = useState('');
   const [savingGroup, setSavingGroup] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingProfilePicture, setUploadingProfilePicture] = useState(false);
@@ -71,6 +73,8 @@ export function GroupDetail() {
       setNameDraft(groupData.name || '');
       setDescriptionDraft(groupData.description || '');
       setCategoryDraft(groupData.category || '');
+      setMemberLimitDraft(groupData.memberLimit || '');
+      setResponsibleEmailDraft(groupData.responsibleEmail || '');
       setEvents(groupEvents);
       setPosts(groupPosts);
     } catch (err) {
@@ -107,6 +111,7 @@ export function GroupDetail() {
   const isManager = (student?.managedGroups || []).some((g) => g.documentId === documentId);
   const isCoordinator = roleType === 'coordinator';
   const canManageGroup = isManager || isCoordinator;
+  const isFull = Boolean(group.memberLimit) && (group.members?.length || 0) >= group.memberLimit && !isMember;
 
   const now = new Date();
   const approved = events.filter((e) => e.status === 'approved');
@@ -236,6 +241,8 @@ export function GroupDetail() {
         name: nameDraft,
         description: descriptionDraft,
         category: categoryDraft,
+        memberLimit: memberLimitDraft ? Number(memberLimitDraft) : null,
+        responsibleEmail: responsibleEmailDraft || null,
       });
       setEditingGroup(false);
       await load();
@@ -269,11 +276,16 @@ export function GroupDetail() {
             <h1>{group.name}</h1>
             <div className="card__meta caption" style={{ marginTop: '0.5rem' }}>
               {group.category}
-              {group.members ? t.card.member(group.members.length) : ''}
+              {group.members ? t.card.member(group.members.length, group.memberLimit) : ''}
             </div>
             {group.manager && (
               <div className="caption" style={{ marginTop: '0.25rem' }}>
                 {t.groupDetail.managedBy} <Link to={`/students/${group.manager.documentId}`}>{group.manager.name}</Link>
+              </div>
+            )}
+            {group.responsibleEmail && (
+              <div className="caption" style={{ marginTop: '0.25rem' }}>
+                {t.groupDetail.contact} <a href={`mailto:${group.responsibleEmail}`}>{group.responsibleEmail}</a>
               </div>
             )}
           </div>
@@ -295,8 +307,12 @@ export function GroupDetail() {
             </Button>
           )}
           {isAuthenticated && (
-            <Button variant={isMember ? 'outline' : 'primary'} disabled={membershipPending} onClick={handleToggleMembership}>
-              {isMember ? t.groupDetail.leave : t.groupDetail.join}
+            <Button
+              variant={isMember ? 'outline' : 'primary'}
+              disabled={membershipPending || isFull}
+              onClick={handleToggleMembership}
+            >
+              {isMember ? t.groupDetail.leave : isFull ? t.groupDetail.groupFull : t.groupDetail.join}
             </Button>
           )}
           {isCoordinator && !confirmingDelete && (
@@ -356,6 +372,25 @@ export function GroupDetail() {
                 rows={4}
                 value={descriptionDraft}
                 onChange={(e) => setDescriptionDraft(e.target.value)}
+              />
+
+              <label className="caption" htmlFor="group-member-limit">{t.groupDetail.memberLimit}</label>
+              <input
+                id="group-member-limit"
+                type="number"
+                min="1"
+                value={memberLimitDraft}
+                onChange={(e) => setMemberLimitDraft(e.target.value)}
+                placeholder={t.groupDetail.memberLimitPlaceholder}
+              />
+
+              <label className="caption" htmlFor="group-responsible-email">{t.groupDetail.responsibleEmail}</label>
+              <input
+                id="group-responsible-email"
+                type="email"
+                value={responsibleEmailDraft}
+                onChange={(e) => setResponsibleEmailDraft(e.target.value)}
+                placeholder={t.groupDetail.responsibleEmailPlaceholder}
               />
 
               <Button disabled={savingGroup} onClick={handleSaveGroup}>

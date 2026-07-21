@@ -197,6 +197,14 @@ export function Review() {
                   <div className="card__title">{proposal.name}</div>
                   {proposal.category && <div className="card__meta caption">{proposal.category}</div>}
                   <div className="card__description">{proposal.description}</div>
+                  {proposal.memberLimit && (
+                    <div className="caption">{t.review.memberLimit(proposal.memberLimit)}</div>
+                  )}
+                  {proposal.responsibleEmail && (
+                    <div className="caption">
+                      {t.review.responsibleEmail} <a href={`mailto:${proposal.responsibleEmail}`}>{proposal.responsibleEmail}</a>
+                    </div>
+                  )}
                   {proposal.submittedBy && (
                     <div className="caption">
                       {t.review.submittedBy} <Link to={`/students/${proposal.submittedBy.documentId}`}>{proposal.submittedBy.name}</Link>

@@ -25,6 +25,8 @@ export function Groups() {
   const [proposalDescription, setProposalDescription] = useState('');
   const [proposalProfilePicture, setProposalProfilePicture] = useState(null);
   const [proposalCoverImage, setProposalCoverImage] = useState(null);
+  const [proposalMemberLimit, setProposalMemberLimit] = useState('');
+  const [proposalResponsibleEmail, setProposalResponsibleEmail] = useState('');
   const [submittingProposal, setSubmittingProposal] = useState(false);
   const [proposalNotice, setProposalNotice] = useState(null);
 
@@ -73,6 +75,8 @@ export function Groups() {
     setProposalDescription('');
     setProposalProfilePicture(null);
     setProposalCoverImage(null);
+    setProposalMemberLimit('');
+    setProposalResponsibleEmail('');
   }
 
   async function handleSubmitProposal(e) {
@@ -90,6 +94,8 @@ export function Groups() {
         description: proposalDescription,
         profilePicture: uploadedProfilePicture?.id,
         coverImage: uploadedCoverImage?.id,
+        memberLimit: proposalMemberLimit ? Number(proposalMemberLimit) : undefined,
+        responsibleEmail: proposalResponsibleEmail || undefined,
       });
       resetProposalForm();
       setProposalNotice(t.groups.proposalSubmitted);
@@ -152,6 +158,29 @@ export function Groups() {
               rows={3}
             />
 
+            <label className="caption" htmlFor="proposal-member-limit">
+              {t.groups.memberLimit}
+            </label>
+            <input
+              id="proposal-member-limit"
+              type="number"
+              min="1"
+              value={proposalMemberLimit}
+              onChange={(e) => setProposalMemberLimit(e.target.value)}
+              placeholder={t.groups.memberLimitPlaceholder}
+            />
+
+            <label className="caption" htmlFor="proposal-responsible-email">
+              {t.groups.responsibleEmail}
+            </label>
+            <input
+              id="proposal-responsible-email"
+              type="email"
+              value={proposalResponsibleEmail}
+              onChange={(e) => setProposalResponsibleEmail(e.target.value)}
+              placeholder={t.groups.responsibleEmailPlaceholder}
+            />
+
             <label className="caption" htmlFor="proposal-profile-picture">
               {t.groups.profilePicture}
             </label>
@@ -187,6 +216,7 @@ export function Groups() {
         <div className="card-grid">
           {groups.map((group) => {
             const isMember = myGroupIds.has(group.documentId);
+            const isFull = Boolean(group.memberLimit) && (group.members?.length || 0) >= group.memberLimit && !isMember;
             const bannerUrl = group.coverImage?.url
               ? `${API_URL}${group.coverImage.url}`
               : group.profilePicture?.url
@@ -203,7 +233,7 @@ export function Groups() {
                   <div className="card__title">{group.name}</div>
                   <div className="card__meta caption">
                     {group.category}
-                    {group.members ? t.card.member(group.members.length) : ''}
+                    {group.members ? t.card.member(group.members.length, group.memberLimit) : ''}
                   </div>
                   <div className="card__description">{group.description}</div>
                 </Link>
@@ -216,10 +246,10 @@ export function Groups() {
                   <div className="card__footer">
                     <Button
                       variant={isMember ? 'outline' : 'primary'}
-                      disabled={pendingId === group.documentId}
+                      disabled={pendingId === group.documentId || isFull}
                       onClick={() => handleToggleMembership(group)}
                     >
-                      {isMember ? t.groups.leave : t.groups.join}
+                      {isMember ? t.groups.leave : isFull ? t.groups.groupFull : t.groups.join}
                     </Button>
                   </div>
                 )}

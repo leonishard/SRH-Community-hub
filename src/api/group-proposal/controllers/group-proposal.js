@@ -66,6 +66,7 @@ module.exports = createCoreController('api::group-proposal.group-proposal', ({ s
     const existing = await strapi.documents('api::group-proposal.group-proposal').findOne({
       documentId,
       populate: ['submittedBy', 'coverImage', 'profilePicture'],
+      fields: ['name', 'description', 'category', 'status', 'memberLimit', 'responsibleEmail'],
     });
     if (!existing) {
       return ctx.notFound();
@@ -91,6 +92,8 @@ module.exports = createCoreController('api::group-proposal.group-proposal', ({ s
           category: existing.category,
           coverImage: existing.coverImage?.id,
           profilePicture: existing.profilePicture?.id,
+          memberLimit: existing.memberLimit,
+          responsibleEmail: existing.responsibleEmail,
           manager: existing.submittedBy.documentId,
         },
       });

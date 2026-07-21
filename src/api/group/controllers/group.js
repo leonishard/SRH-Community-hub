@@ -86,9 +86,17 @@ module.exports = createCoreController('api::group.group', ({ strapi }) => ({
     }
 
     const { id: documentId } = ctx.params;
-    const group = await strapi.documents('api::group.group').findOne({ documentId });
+    const group = await strapi.documents('api::group.group').findOne({
+      documentId,
+      populate: ['members'],
+    });
     if (!group) {
       return ctx.notFound('Group not found.');
+    }
+
+    const alreadyMember = (group.members || []).some((m) => m.documentId === student.documentId);
+    if (!alreadyMember && group.memberLimit && (group.members || []).length >= group.memberLimit) {
+      return ctx.badRequest('This group has reached its member limit.');
     }
 
     const updated = await strapi.documents('api::group.group').update({

@@ -571,9 +571,17 @@ export interface ApiGroupProposalGroupProposal
       'api::group-proposal.group-proposal'
     > &
       Schema.Attribute.Private;
+    memberLimit: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     profilePicture: Schema.Attribute.Media<'images'>;
     publishedAt: Schema.Attribute.DateTime;
+    responsibleEmail: Schema.Attribute.Email;
     status: Schema.Attribute.Enumeration<['pending', 'approved', 'rejected']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'pending'>;
@@ -607,11 +615,19 @@ export interface ApiGroupGroup extends Struct.CollectionTypeSchema {
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::group.group'> &
       Schema.Attribute.Private;
     manager: Schema.Attribute.Relation<'manyToOne', 'api::student.student'>;
+    memberLimit: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
     members: Schema.Attribute.Relation<'manyToMany', 'api::student.student'>;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     posts: Schema.Attribute.Relation<'oneToMany', 'api::post.post'>;
     profilePicture: Schema.Attribute.Media<'images'>;
     publishedAt: Schema.Attribute.DateTime;
+    responsibleEmail: Schema.Attribute.Email;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

@@ -10,8 +10,24 @@ export async function listGroupProposals(params = {}) {
   return res.data;
 }
 
-export async function submitGroupProposal({ name, description, category, coverImage, profilePicture }) {
-  return api.post('/group-proposals', { name, description, category, coverImage, profilePicture });
+export async function submitGroupProposal({
+  name,
+  description,
+  category,
+  coverImage,
+  profilePicture,
+  memberLimit,
+  responsibleEmail,
+}) {
+  return api.post('/group-proposals', {
+    name,
+    description,
+    category,
+    coverImage,
+    profilePicture,
+    memberLimit,
+    responsibleEmail,
+  });
 }
 
 export async function uploadGroupProposalImage(file) {
